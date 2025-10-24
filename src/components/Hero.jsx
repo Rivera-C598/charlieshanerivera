@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from '@emotion/styled';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiGithub, FiLinkedin, FiMail, FiDownload, FiArrowDown, FiCode, FiImage } from 'react-icons/fi';
+import { FiGithub, FiLinkedin, FiDownload, FiArrowDown, FiCode, FiImage } from 'react-icons/fi';
 
 const HeroContainer = styled.section`
   position: relative;
@@ -380,14 +380,6 @@ const Hero = () => {
             whileTap={{ scale: 0.9 }}
           >
             <FiImage size={20} />
-          </SocialLink>
-
-          <SocialLink
-            href="mailto:your.email@example.com"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-          >
-            <FiMail size={20} />
           </SocialLink>
         </SocialLinks>
       </HeroContent>

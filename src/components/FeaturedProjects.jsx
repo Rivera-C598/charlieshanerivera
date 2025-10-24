@@ -691,20 +691,7 @@ const FeaturedProjects = () => {
                     />
                   </ParticlesContainer>
                   <SpecialArtImage src={project.imageUrl} alt={project.title} />
-                  <ArtTitle
-                    show={isHovered}
-                    theme={theme}
-                    as={motion.div}
-                    initial={{ opacity: 0, y: 20, scale: 0.9 }}
-                    animate={{
-                      opacity: isHovered ? 1 : 0,
-                      y: isHovered ? 0 : 20,
-                      scale: isHovered ? 1 : 0.9
-                    }}
-                    transition={{ duration: 0.4, ease: "easeOut" }}
-                  >
-                    <ArtTitleText theme={theme}>{project.title}</ArtTitleText>
-                  </ArtTitle>
+                  {/* Art title hidden as requested */}
                 </SpecialArtCard>
               ) : (
                 <ProjectCard

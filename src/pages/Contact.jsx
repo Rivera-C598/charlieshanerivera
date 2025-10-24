@@ -42,14 +42,12 @@ const SectionSubtitle = styled(motion.p)`
 `;
 
 const ContactContent = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4rem;
+  display: flex;
+  justify-content: center;
   align-items: start;
 
   @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 3rem;
+    padding: 0 1rem;
   }
 `;
 
@@ -61,6 +59,14 @@ const ContactForm = styled(motion.form)`
   border: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
+  width: 100%;
+  max-width: 600px;
+
+  @media (max-width: 768px) {
+    padding: 1.5rem;
+    border-radius: 15px;
+    margin: 0 0.5rem;
+  }
 `;
 
 const FormTitle = styled.h3`
@@ -85,6 +91,10 @@ const InputIcon = styled.div`
   transform: translateY(-50%);
   color: ${props => props.theme.colors.primary};
   z-index: 1;
+
+  @media (max-width: 768px) {
+    left: 0.875rem;
+  }
 `;
 
 const Input = styled.input`
@@ -106,6 +116,12 @@ const Input = styled.input`
 
   &::placeholder {
     color: ${props => props.theme.colors.muted};
+  }
+
+  @media (max-width: 768px) {
+    padding: 0.875rem 0.875rem 0.875rem 2.75rem;
+    font-size: 16px; /* Prevents zoom on iOS */
+    border-radius: 10px;
   }
 `;
 
@@ -131,6 +147,13 @@ const TextArea = styled.textarea`
 
   &::placeholder {
     color: ${props => props.theme.colors.muted};
+  }
+
+  @media (max-width: 768px) {
+    padding: 0.875rem 0.875rem 0.875rem 2.75rem;
+    font-size: 16px; /* Prevents zoom on iOS */
+    border-radius: 10px;
+    min-height: 100px;
   }
 `;
 
@@ -159,6 +182,14 @@ const SubmitButton = styled(motion.button)`
   &:disabled {
     opacity: 0.7;
     cursor: not-allowed;
+  }
+
+  @media (max-width: 768px) {
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+    width: 100%;
+    border-radius: 12px;
+    margin-top: 1.5rem;
   }
 `;
 
@@ -446,85 +477,6 @@ const Contact = () => {
               <FiSend size={18} />
             </SubmitButton>
           </ContactForm>
-
-          <ContactInfo
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-          >
-            <InfoCard>
-              <InfoTitle>
-                <FiMail size={24} />
-                Contact Information
-              </InfoTitle>
-
-              <InfoItem>
-                <InfoIcon>
-                  <FiMail size={18} />
-                </InfoIcon>
-                <InfoText>
-                  <InfoLabel>Email</InfoLabel>
-                  <InfoValue>
-                    <a href="mailto:charlie.rivera@example.com">charlie.rivera@example.com</a>
-                  </InfoValue>
-                </InfoText>
-              </InfoItem>
-
-              <InfoItem>
-                <InfoIcon>
-                  <FiMapPin size={18} />
-                </InfoIcon>
-                <InfoText>
-                  <InfoLabel>Location</InfoLabel>
-                  <InfoValue>Available for Remote Work</InfoValue>
-                </InfoText>
-              </InfoItem>
-
-              <InfoItem>
-                <InfoIcon>
-                  <FiLinkedin size={18} />
-                </InfoIcon>
-                <InfoText>
-                  <InfoLabel>LinkedIn</InfoLabel>
-                  <InfoValue>
-                    <a href="https://linkedin.com/in/charlie-rivera" target="_blank" rel="noopener noreferrer">
-                      linkedin.com/in/charlie-rivera
-                    </a>
-                  </InfoValue>
-                </InfoText>
-              </InfoItem>
-
-              <SocialLinks>
-                <SocialLink
-                  href="https://github.com/Rivera-C598"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  <FiGithub size={20} />
-                </SocialLink>
-                
-                <SocialLink
-                  href="https://linkedin.com/in/charlie-rivera"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  <FiLinkedin size={20} />
-                </SocialLink>
-                
-                <SocialLink
-                  href="mailto:charlie.rivera@example.com"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  <FiMail size={20} />
-                </SocialLink>
-              </SocialLinks>
-            </InfoCard>
-          </ContactInfo>
         </ContactContent>
       </Container>
     </ContactContainer>

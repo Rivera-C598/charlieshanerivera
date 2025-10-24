@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import styled from '@emotion/styled';
 import { motion } from 'framer-motion';
-import { FiHeart, FiGithub, FiLinkedin, FiMail, FiImage } from 'react-icons/fi';
+import { FiHeart, FiGithub, FiLinkedin, FiImage } from 'react-icons/fi';
 
 const FooterContainer = styled.footer`
   background: ${props => props.theme.gradients.dark};
@@ -178,13 +178,6 @@ const Footer = () => {
             whileTap={{ scale: 0.9 }}
           >
             <FiImage size={20} />
-          </SocialLink>
-          <SocialLink
-            href="mailto:charlieshane57@gmail.com"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-          >
-            <FiMail size={20} />
           </SocialLink>
         </SocialLinks>
 
