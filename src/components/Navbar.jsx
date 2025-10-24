@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import styled from '@emotion/styled';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiCode, FiPalette, FiUser, FiMail, FiMenu, FiX } from 'react-icons/fi';
+import { FiCode, FiUser, FiMail, FiMenu, FiX } from 'react-icons/fi';
+import RotatingProfilePicture from './RotatingProfilePicture';
 
 const Nav = styled(motion.nav)`
   position: fixed;
@@ -31,21 +32,19 @@ const NavContainer = styled.div`
   align-items: center;
 `;
 
-const Logo = styled(Link)`
-  font-size: 1.5rem;
-  font-weight: 700;
-  background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+const LogoContainer = styled(Link)`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   text-decoration: none;
-  font-family: 'JetBrains Mono', monospace;
+  transition: transform 0.2s ease;
 
   &:hover {
     transform: scale(1.05);
-    transition: transform 0.2s ease;
   }
 `;
+
+
 
 const NavList = styled.ul`
   list-style: none;
@@ -104,7 +103,7 @@ const NavItem = styled.li`
   position: relative;
 `;
 
-const NavLink = styled(Link)`
+const NavLink = styled(({ active, ...props }) => <Link {...props} />)`
   color: ${props => props.active ? props.theme.colors.primary : props.theme.colors.text};
   text-decoration: none;
   font-size: 1rem;
@@ -168,11 +167,11 @@ const CloseButton = styled.button`
 `;
 
 const navItems = [
-  { path: '/', label: 'Home', icon: FiUser },
-  { path: '/projects', label: 'Projects', icon: FiCode },
-  { path: '/art', label: 'Art', icon: FiPalette },
-  { path: '/skills', label: 'Skills', icon: FiCode },
-  { path: '/contact', label: 'Contact', icon: FiMail },
+  { path: '/', label: 'Home', icon: FiUser, type: 'route' },
+  { path: '#about', label: 'About', icon: FiUser, type: 'scroll' },
+  { path: '#skills', label: 'Skills', icon: FiCode, type: 'scroll' },
+  { path: '#projects', label: 'Projects', icon: FiCode, type: 'scroll' },
+  { path: '#contact', label: 'Contact', icon: FiMail, type: 'scroll' },
 ];
 
 const Navbar = () => {
@@ -202,24 +201,57 @@ const Navbar = () => {
         transition={{ duration: 0.5 }}
       >
         <NavContainer>
-          <Logo to="/">{'<dev/artist>'}</Logo>
+          <LogoContainer to="/">
+            <RotatingProfilePicture size="40px" />
+
+          </LogoContainer>
           
           <NavList>
-            {navItems.map(({ path, label, icon: Icon }) => (
+            {navItems.map(({ path, label, icon: Icon, type }) => (
               <NavItem key={path}>
-                <NavLink 
-                  to={path} 
-                  active={location.pathname === path}
-                >
-                  <Icon size={16} />
-                  {label}
-                </NavLink>
+                {type === 'scroll' ? (
+                  <NavLink 
+                    as="a"
+                    href={path}
+                    active={false}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      // If not on home page, navigate to home first
+                      if (location.pathname !== '/') {
+                        window.location.href = `/${path}`;
+                      } else {
+                        const element = document.querySelector(path);
+                        if (element) {
+                          element.scrollIntoView({ behavior: 'smooth' });
+                        }
+                      }
+                    }}
+                  >
+                    <Icon size={16} />
+                    {label}
+                  </NavLink>
+                ) : (
+                  <NavLink 
+                    to={path} 
+                    active={location.pathname === path}
+                    onClick={(e) => {
+                      // If clicking Home while already on home page, scroll to top
+                      if (path === '/' && location.pathname === '/') {
+                        e.preventDefault();
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }
+                    }}
+                  >
+                    <Icon size={16} />
+                    {label}
+                  </NavLink>
+                )}
               </NavItem>
             ))}
           </NavList>
 
-          <MobileMenuButton onClick={() => setMobileMenuOpen(true)}>
-            <FiMenu />
+          <MobileMenuButton onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+            {mobileMenuOpen ? <FiX /> : <FiMenu />}
           </MobileMenuButton>
         </NavContainer>
       </Nav>
@@ -236,20 +268,52 @@ const Navbar = () => {
               <FiX />
             </CloseButton>
             
-            {navItems.map(({ path, label, icon: Icon }) => (
+            {navItems.map(({ path, label, icon: Icon, type }) => (
               <motion.div
                 key={path}
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.1 }}
               >
-                <MobileNavLink 
-                  to={path} 
-                  active={location.pathname === path}
-                >
-                  <Icon size={20} />
-                  {label}
-                </MobileNavLink>
+                {type === 'scroll' ? (
+                  <MobileNavLink 
+                    as="a"
+                    href={path}
+                    active={false}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      // If not on home page, navigate to home first
+                      if (location.pathname !== '/') {
+                        window.location.href = `/${path}`;
+                      } else {
+                        const element = document.querySelector(path);
+                        if (element) {
+                          element.scrollIntoView({ behavior: 'smooth' });
+                        }
+                      }
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    <Icon size={20} />
+                    {label}
+                  </MobileNavLink>
+                ) : (
+                  <MobileNavLink 
+                    to={path} 
+                    active={location.pathname === path}
+                    onClick={(e) => {
+                      // If clicking Home while already on home page, scroll to top
+                      if (path === '/' && location.pathname === '/') {
+                        e.preventDefault();
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    <Icon size={20} />
+                    {label}
+                  </MobileNavLink>
+                )}
               </motion.div>
             ))}
           </MobileMenu>

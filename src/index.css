@@ -1,21 +1,329 @@
-/* Basic Styles */
-body {
-  margin: 0;
-  font-family: 'Roboto', sans-serif; /* Example font */
-  background-color: #0f0f1a; /* Dark background */
-  color: #e0e0e0;
+/* Global Styles & CSS Variables */
+:root {
+  /* Colors */
+  --color-primary: #00d4ff;
+  --color-secondary: #ff6b6b;
+  --color-accent: #7c3aed;
+  --color-background: #0a0a0f;
+  --color-surface: #1a1a2e;
+  --color-text: #ffffff;
+  --color-text-light: #a0a0a0;
+  --color-text-muted: #6b7280;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+
+  /* Alpha Colors (for transparency) */
+  --color-primary-10: rgba(0, 212, 255, 0.1);
+  --color-primary-20: rgba(0, 212, 255, 0.2);
+  --color-primary-30: rgba(0, 212, 255, 0.3);
+  --color-accent-10: rgba(124, 58, 237, 0.1);
+  --color-secondary-05: rgba(255, 107, 107, 0.05);
+  --color-success-05: rgba(16, 185, 129, 0.05);
+  --color-white-05: rgba(255, 255, 255, 0.05);
+  --color-white-10: rgba(255, 255, 255, 0.1);
+  --color-white-20: rgba(255, 255, 255, 0.2);
+  --color-black-50: rgba(0, 0, 0, 0.5);
+  --color-black-70: rgba(0, 0, 0, 0.7);
+  --color-black-90: rgba(0, 0, 0, 0.9);
+  --color-black-95: rgba(0, 0, 0, 0.95);
+
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%);
+  --gradient-secondary: linear-gradient(135deg, #ff6b6b 0%, #ffa726 100%);
+  --gradient-dark: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%);
+  --gradient-card: linear-gradient(135deg, rgba(20, 20, 35, 0.9) 0%, rgba(26, 26, 46, 0.9) 100%);
+
+  /* Shadows */
+  --shadow-small: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --shadow-large: 0 8px 32px rgba(0, 0, 0, 0.2);
+  --shadow-glow: 0 0 20px rgba(0, 212, 255, 0.3);
+  --shadow-glow-hover: 0 0 30px rgba(0, 212, 255, 0.5);
+
+  /* Typography */
+  --font-primary: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Spacing */
+  --spacing-xs: 0.5rem;    /* 8px */
+  --spacing-sm: 1rem;      /* 16px */
+  --spacing-md: 1.5rem;    /* 24px */
+  --spacing-lg: 2rem;      /* 32px */
+  --spacing-xl: 3rem;      /* 48px */
+  --spacing-2xl: 4rem;     /* 64px */
+  --spacing-3xl: 5rem;     /* 80px */
+  --spacing-4xl: 8rem;     /* 128px */
+
+  /* Border Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 15px;
+  --radius-xl: 20px;
+  --radius-2xl: 25px;
+  --radius-full: 50px;
+
+  /* Font Sizes */
+  --font-xs: 0.8rem;
+  --font-sm: 0.9rem;
+  --font-base: 1rem;
+  --font-lg: 1.1rem;
+  --font-xl: 1.2rem;
+  --font-2xl: 1.5rem;
+  --font-3xl: 1.8rem;
+  --font-4xl: 2rem;
+
+  /* Z-Index */
+  --z-dropdown: 1000;
+  --z-modal: 1001;
+  --z-tooltip: 1002;
+
+  /* Breakpoints (for reference) */
+  --breakpoint-mobile: 480px;
+  --breakpoint-tablet: 768px;
+  --breakpoint-desktop: 1024px;
+  --breakpoint-wide: 1200px;
 }
 
-/* Optional: Basic reset for elements */
+/* Global Reset & Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-primary);
+  background: var(--gradient-dark);
+  background-attachment: fixed;
+  color: var(--color-text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Background Effects */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(124, 58, 237, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(255, 107, 107, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Typography */
 h1, h2, h3, h4, h5, h6 {
   margin: 0;
+  color: var(--color-text);
+  font-weight: 600;
+  line-height: 1.2;
 }
 
 p {
   margin: 0;
+  color: var(--color-text-light);
 }
 
 a {
   text-decoration: none;
   color: inherit;
+}
+
+code {
+  font-family: var(--font-mono);
+  background: rgba(0, 212, 255, 0.1);
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+/* Selection */
+::selection {
+  background: rgba(0, 212, 255, 0.3);
+  color: var(--color-text);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-primary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent);
+}
+
+/* Utility Classes */
+.gradient-text {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.card {
+  background: var(--gradient-card);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+}
+
+.button-primary {
+  background: var(--gradient-primary);
+  color: white;
+  border: none;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: 50px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-glow);
+}
+
+.button-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow-hover);
+}
+
+.button-secondary {
+  background: transparent;
+  color: var(--color-primary);
+  border: 2px solid var(--color-primary);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: 50px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.button-secondary:hover {
+  background: var(--color-primary);
+  color: var(--color-background);
+  transform: translateY(-2px);
+}
+
+/* Responsive Utilities */
+@media (max-width: 768px) {
+  /* Mobile-specific adjustments */
+  body {
+    font-size: 14px;
+  }
+  
+  /* Reduce spacing on mobile */
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  /* Ensure touch targets are large enough */
+  button, a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Improve text readability on mobile */
+  h1 { font-size: clamp(1.8rem, 6vw, 3rem); }
+  h2 { font-size: clamp(1.5rem, 5vw, 2.5rem); }
+  h3 { font-size: clamp(1.3rem, 4vw, 2rem); }
+  
+  /* Mobile-friendly modals */
+  .modal-content {
+    margin: 1rem;
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Extra small screens */
+  body {
+    font-size: 13px;
+  }
+  
+  .container {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+}
+
+/* Landscape mobile adjustments */
+@media (max-height: 500px) and (orientation: landscape) {
+  .hero-section {
+    min-height: 100vh;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  /* Optimize for retina displays */
+  img {
+    image-rendering: -webkit-optimize-contrast;
+  }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus improvements for keyboard navigation */
+*:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Smooth scrolling for better UX */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Ensure images are responsive by default */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Responsive grid utilities */
+.responsive-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+@media (max-width: 768px) {
+  .responsive-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+}
+
+/* Safe area adjustments for mobile devices with notches */
+@supports (padding: max(0px)) {
+  .safe-area-padding {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
 }

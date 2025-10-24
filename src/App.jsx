@@ -1,13 +1,13 @@
+import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, Global, css } from '@emotion/react';
 import styled from '@emotion/styled';
 
 import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 import Home from './pages/Home';
-import Projects from './pages/Projects';
-import Art from './pages/Art';
-import Skills from './pages/Skills';
-import Contact from './pages/Contact';
+import ProjectsClean from './pages/ProjectsClean';
+import ArtSimple from './pages/ArtSimple';
 
 const theme = {
   colors: {
@@ -127,7 +127,14 @@ const GlobalStyles = css`
 `;
 
 const AppContainer = styled.div`
-  /* Add any overall app container styles here if needed */
+  min-height: 100vh;
+  position: relative;
+`;
+
+const PageContainer = styled.div`
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
 `;
 
 function App() {
@@ -137,13 +144,14 @@ function App() {
       <BrowserRouter>
         <AppContainer>
           <Navbar />
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/projects" element={<Projects />} />
-            <Route path="/art" element={<Art />} />
-            <Route path="/skills" element={<Skills />} />
-            <Route path="/contact" element={<Contact />} />
-          </Routes>
+          <PageContainer>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/projects" element={<ProjectsClean />} />
+              <Route path="/art" element={<ArtSimple />} />
+            </Routes>
+          </PageContainer>
+          <Footer />
         </AppContainer>
       </BrowserRouter>
     </ThemeProvider>

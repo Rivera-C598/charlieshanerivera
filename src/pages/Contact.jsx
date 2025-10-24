@@ -1,153 +1,532 @@
-import React from 'react';
+import { useState } from 'react';
 import styled from '@emotion/styled';
+import { motion } from 'framer-motion';
+import { FiMail, FiLinkedin, FiGithub, FiMapPin, FiSend, FiUser, FiMessageSquare } from 'react-icons/fi';
+import emailjs from '@emailjs/browser';
+import AnimatedBackground from '../components/AnimatedBackground';
 
-const ContactContainer = styled.div`
-  padding: 5rem 5%;
-  background-color: #0f0f1a;
-  color: #e0e0e0;
+const ContactContainer = styled.section`
+  padding: 8rem 2rem;
+  min-height: 100vh;
+  background: ${props => props.theme.gradients.dark};
+  position: relative;
+  overflow: hidden;
 `;
 
-const SectionTitle = styled.h2`
+const Container = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+`;
+
+const SectionTitle = styled(motion.h2)`
   text-align: center;
-  font-size: 3rem;
-  color: #94d3fd;
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  background: ${props => props.theme.gradients.primary};
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 2rem;
+  font-weight: 700;
+`;
+
+const SectionSubtitle = styled(motion.p)`
+  text-align: center;
+  font-size: 1.2rem;
+  color: ${props => props.theme.colors.lightText};
   margin-bottom: 4rem;
-  text-shadow: 0 0 15px rgba(148, 211, 253, 0.5);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
 `;
 
 const ContactContent = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 4rem;
-  max-width: 1200px;
-  margin: 0 auto;
+  align-items: start;
 
-  @media (max-width: 992px) {
+  @media (max-width: 768px) {
     grid-template-columns: 1fr;
+    gap: 3rem;
   }
 `;
 
-const ContactForm = styled.form`
+const ContactForm = styled(motion.form)`
+  background: ${props => props.theme.gradients.card};
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 2.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
+`;
+
+const FormTitle = styled.h3`
+  font-size: 1.5rem;
+  color: ${props => props.theme.colors.text};
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+const InputGroup = styled.div`
+  position: relative;
+  margin-bottom: 1.5rem;
+`;
+
+const InputIcon = styled.div`
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: ${props => props.theme.colors.primary};
+  z-index: 1;
 `;
 
 const Input = styled.input`
-  background-color: #1a1a2e;
-  border: 1px solid #94d3fd;
-  color: #e0e0e0;
-  padding: 1rem;
-  margin-bottom: 1.5rem;
-  border-radius: 8px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: ${props => props.theme.colors.text};
+  padding: 1rem 1rem 1rem 3rem;
+  border-radius: 12px;
   font-size: 1rem;
-`;
+  transition: all 0.3s ease;
 
-const TextArea = styled.textarea`
-  background-color: #1a1a2e;
-  border: 1px solid #94d3fd;
-  color: #e0e0e0;
-  padding: 1rem;
-  margin-bottom: 1.5rem;
-  border-radius: 8px;
-  font-size: 1rem;
-  min-height: 150px;
-`;
+  &:focus {
+    outline: none;
+    border-color: ${props => props.theme.colors.primary};
+    box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.2);
+    background: rgba(255, 255, 255, 0.08);
+  }
 
-const SubmitButton = styled.button`
-  background-color: #94d3fd;
-  color: #0f0f1a;
-  border: none;
-  padding: 1rem 2rem;
-  font-size: 1.2rem;
-  font-weight: 600;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: background-color 0.3s ease;
-
-  &:hover {
-    background-color: #ff6b6b;
+  &::placeholder {
+    color: ${props => props.theme.colors.muted};
   }
 `;
 
-const ContactInfo = styled.div`
+const TextArea = styled.textarea`
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: ${props => props.theme.colors.text};
+  padding: 1rem 1rem 1rem 3rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  min-height: 120px;
+  transition: all 0.3s ease;
+  resize: vertical;
+  font-family: inherit;
+
+  &:focus {
+    outline: none;
+    border-color: ${props => props.theme.colors.primary};
+    box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.2);
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  &::placeholder {
+    color: ${props => props.theme.colors.muted};
+  }
+`;
+
+const SubmitButton = styled(motion.button)`
+  background: ${props => props.theme.gradients.primary};
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 50px;
+  transition: all 0.3s ease;
+  box-shadow: ${props => props.theme.shadows.glow};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: ${props => props.theme.shadows.glowHover};
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+`;
+
+const ContactInfo = styled(motion.div)`
   display: flex;
   flex-direction: column;
+  gap: 2rem;
+`;
+
+const InfoCard = styled.div`
+  background: ${props => props.theme.gradients.card};
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: ${props => props.theme.shadows.large};
+  }
+`;
+
+const InfoTitle = styled.h3`
+  font-size: 1.3rem;
+  color: ${props => props.theme.colors.text};
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 `;
 
 const InfoItem = styled.div`
   display: flex;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
+  padding: 0.8rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+    transform: translateX(5px);
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 `;
 
 const InfoIcon = styled.div`
-  font-size: 2rem;
-  color: #94d3fd;
-  margin-right: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: rgba(0, 212, 255, 0.1);
+  border-radius: 10px;
+  color: ${props => props.theme.colors.primary};
+  margin-right: 1rem;
+  font-size: 1.2rem;
 `;
 
-const InfoText = styled.p`
-  font-size: 1.1rem;
-  color: #c0c0c0;
+const InfoText = styled.div`
+  flex: 1;
+`;
+
+const InfoLabel = styled.p`
+  font-size: 0.9rem;
+  color: ${props => props.theme.colors.muted};
+  margin: 0 0 0.2rem 0;
+`;
+
+const InfoValue = styled.p`
+  font-size: 1rem;
+  color: ${props => props.theme.colors.text};
   margin: 0;
+  font-weight: 500;
 
   a {
-    color: #94d3fd;
+    color: ${props => props.theme.colors.primary};
     text-decoration: none;
+    transition: color 0.3s ease;
+
     &:hover {
-      text-decoration: underline;
+      color: ${props => props.theme.colors.secondary};
     }
   }
 `;
 
 const SocialLinks = styled.div`
-  margin-top: 2rem;
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
 `;
 
-const SocialIcon = styled.a`
-  color: #e0e0e0;
-  font-size: 2.5rem;
-  margin-right: 1.5rem;
-  transition: color 0.3s ease, transform 0.3s ease;
+const SocialLink = styled(motion.a)`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  background: rgba(255, 255, 255, 0.1);
+  color: ${props => props.theme.colors.text};
+  border-radius: 50%;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
 
   &:hover {
-    color: #94d3fd;
-    transform: scale(1.1);
+    background: ${props => props.theme.colors.primary};
+    color: ${props => props.theme.colors.background};
+    transform: translateY(-3px);
   }
 `;
 
 const Contact = () => {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    subject: '',
+    message: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      // EmailJS configuration - you'll need to replace these with your actual values
+      const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID || 'your_service_id';
+      const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || 'your_template_id';
+      const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || 'your_public_key';
+
+      const templateParams = {
+        name: formData.name,
+        from_email: formData.email,
+        title: formData.subject,
+        message: formData.message,
+        time: new Date().toLocaleString('en-US', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          timeZoneName: 'short'
+        }),
+        to_email: 'charlieshane57@gmail.com'
+      };
+
+      // Check if EmailJS is properly configured
+      if (serviceId === 'your_service_id' || templateId === 'your_template_id' || publicKey === 'your_public_key') {
+        // Fallback to mailto if EmailJS not configured
+        const mailtoLink = `mailto:charlieshane57@gmail.com?subject=${encodeURIComponent(`Contact Us: ${formData.subject}`)}&body=${encodeURIComponent(
+          `From: ${formData.name} (${formData.email})\n\nMessage:\n${formData.message}`
+        )}`;
+        window.open(mailtoLink);
+        alert('Email client opened! Please send the message from your email app.\n\nTo enable direct sending, please configure EmailJS in your environment variables.');
+      } else {
+        // Use EmailJS for seamless sending
+        await emailjs.send(serviceId, templateId, templateParams, publicKey);
+        alert('Message sent successfully! I\'ll get back to you soon.');
+      }
+      
+      setIsSubmitting(false);
+      setFormData({ name: '', email: '', subject: '', message: '' });
+    } catch (error) {
+      setIsSubmitting(false);
+      console.error('EmailJS Error:', error);
+      
+      // Fallback to mailto on error
+      const mailtoLink = `mailto:charlieshane57@gmail.com?subject=${encodeURIComponent(`Contact Us: ${formData.subject}`)}&body=${encodeURIComponent(
+        `From: ${formData.name} (${formData.email})\n\nMessage:\n${formData.message}`
+      )}`;
+      window.open(mailtoLink);
+      alert('There was an issue with direct sending. Your email client has been opened as a fallback.');
+    }
+  };
+
   return (
     <ContactContainer>
-      <SectionTitle>Contact Me</SectionTitle>
-      <ContactContent>
-        <ContactForm>
-          <Input type="text" placeholder="Your Name" required />
-          <Input type="email" placeholder="Your Email" required />
-          <Input type="text" placeholder="Subject" required />
-          <TextArea placeholder="Your Message" required />
-          <SubmitButton type="submit">Send Message</SubmitButton>
-        </ContactForm>
-        <ContactInfo>
-          <InfoItem>
-            <InfoIcon>📧</InfoIcon>
-            <InfoText><a href="mailto:your.email@example.com">your.email@example.com</a></InfoText>
-          </InfoItem>
-          <InfoItem>
-            <InfoIcon>💼</InfoIcon>
-            <InfoText><a href="#" target="_blank" rel="noopener noreferrer">linkedin.com/in/yourprofile</a></InfoText>
-          </InfoItem>
-          <InfoItem>
-            <InfoIcon>💻</InfoIcon>
-            <InfoText><a href="#" target="_blank" rel="noopener noreferrer">github.com/yourusername</a></InfoText>
-          </InfoItem>
-          <SocialLinks>
-            <SocialIcon href="#" target="_blank" rel="noopener noreferrer">📘</SocialIcon>
-            <SocialIcon href="#" target="_blank" rel="noopener noreferrer">🐦</SocialIcon>
-            <SocialIcon href="#" target="_blank" rel="noopener noreferrer">📷</SocialIcon>
-          </SocialLinks>
-        </ContactInfo>
-      </ContactContent>
+      <AnimatedBackground />
+      <Container>
+        <SectionTitle
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
+          Get In Touch
+        </SectionTitle>
+
+        <SectionSubtitle
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+        >
+          Ready to bring your ideas to life? Let's collaborate and create something amazing together.
+        </SectionSubtitle>
+
+        <ContactContent>
+          <ContactForm
+            onSubmit={handleSubmit}
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+          >
+            <FormTitle>
+              <FiMessageSquare size={24} />
+              Send a Message
+            </FormTitle>
+
+            <InputGroup>
+              <InputIcon>
+                <FiUser size={18} />
+              </InputIcon>
+              <Input
+                type="text"
+                name="name"
+                placeholder="Your Name"
+                value={formData.name}
+                onChange={handleChange}
+                required
+              />
+            </InputGroup>
+
+            <InputGroup>
+              <InputIcon>
+                <FiMail size={18} />
+              </InputIcon>
+              <Input
+                type="email"
+                name="email"
+                placeholder="Your Email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
+            </InputGroup>
+
+            <InputGroup>
+              <InputIcon>
+                <FiMessageSquare size={18} />
+              </InputIcon>
+              <Input
+                type="text"
+                name="subject"
+                placeholder="Subject"
+                value={formData.subject}
+                onChange={handleChange}
+                required
+              />
+            </InputGroup>
+
+            <InputGroup>
+              <InputIcon style={{ top: '1.2rem', transform: 'none' }}>
+                <FiMessageSquare size={18} />
+              </InputIcon>
+              <TextArea
+                name="message"
+                placeholder="Your Message"
+                value={formData.message}
+                onChange={handleChange}
+                required
+              />
+            </InputGroup>
+
+            <SubmitButton
+              type="submit"
+              disabled={isSubmitting}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              {isSubmitting ? 'Sending...' : 'Send Message'}
+              <FiSend size={18} />
+            </SubmitButton>
+          </ContactForm>
+
+          <ContactInfo
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
+          >
+            <InfoCard>
+              <InfoTitle>
+                <FiMail size={24} />
+                Contact Information
+              </InfoTitle>
+
+              <InfoItem>
+                <InfoIcon>
+                  <FiMail size={18} />
+                </InfoIcon>
+                <InfoText>
+                  <InfoLabel>Email</InfoLabel>
+                  <InfoValue>
+                    <a href="mailto:charlie.rivera@example.com">charlie.rivera@example.com</a>
+                  </InfoValue>
+                </InfoText>
+              </InfoItem>
+
+              <InfoItem>
+                <InfoIcon>
+                  <FiMapPin size={18} />
+                </InfoIcon>
+                <InfoText>
+                  <InfoLabel>Location</InfoLabel>
+                  <InfoValue>Available for Remote Work</InfoValue>
+                </InfoText>
+              </InfoItem>
+
+              <InfoItem>
+                <InfoIcon>
+                  <FiLinkedin size={18} />
+                </InfoIcon>
+                <InfoText>
+                  <InfoLabel>LinkedIn</InfoLabel>
+                  <InfoValue>
+                    <a href="https://linkedin.com/in/charlie-rivera" target="_blank" rel="noopener noreferrer">
+                      linkedin.com/in/charlie-rivera
+                    </a>
+                  </InfoValue>
+                </InfoText>
+              </InfoItem>
+
+              <SocialLinks>
+                <SocialLink
+                  href="https://github.com/Rivera-C598"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <FiGithub size={20} />
+                </SocialLink>
+                
+                <SocialLink
+                  href="https://linkedin.com/in/charlie-rivera"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <FiLinkedin size={20} />
+                </SocialLink>
+                
+                <SocialLink
+                  href="mailto:charlie.rivera@example.com"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <FiMail size={20} />
+                </SocialLink>
+              </SocialLinks>
+            </InfoCard>
+          </ContactInfo>
+        </ContactContent>
+      </Container>
     </ContactContainer>
   );
 };

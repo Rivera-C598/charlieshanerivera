@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from '@emotion/styled';
-import { motion } from 'framer-motion';
-import { FiGithub, FiLinkedin, FiMail, FiDownload, FiArrowDown } from 'react-icons/fi';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FiGithub, FiLinkedin, FiMail, FiDownload, FiArrowDown, FiCode, FiImage } from 'react-icons/fi';
 
 const HeroContainer = styled.section`
   position: relative;
@@ -25,11 +25,40 @@ const HeroContainer = styled.section`
       radial-gradient(circle at 30% 20%, rgba(0, 212, 255, 0.15) 0%, transparent 50%),
       radial-gradient(circle at 70% 80%, rgba(124, 58, 237, 0.15) 0%, transparent 50%);
     pointer-events: none;
+    animation: backgroundShift 20s ease-in-out infinite;
+  }
+
+  @keyframes backgroundShift {
+    0% { 
+      background: 
+        radial-gradient(circle at 30% 20%, rgba(0, 212, 255, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 70% 80%, rgba(124, 58, 237, 0.15) 0%, transparent 50%);
+    }
+    25% { 
+      background: 
+        radial-gradient(circle at 60% 30%, rgba(0, 212, 255, 0.18) 0%, transparent 50%),
+        radial-gradient(circle at 40% 70%, rgba(124, 58, 237, 0.18) 0%, transparent 50%);
+    }
+    50% { 
+      background: 
+        radial-gradient(circle at 70% 30%, rgba(0, 212, 255, 0.2) 0%, transparent 50%),
+        radial-gradient(circle at 30% 70%, rgba(124, 58, 237, 0.2) 0%, transparent 50%);
+    }
+    75% { 
+      background: 
+        radial-gradient(circle at 40% 25%, rgba(0, 212, 255, 0.18) 0%, transparent 50%),
+        radial-gradient(circle at 60% 75%, rgba(124, 58, 237, 0.18) 0%, transparent 50%);
+    }
+    100% { 
+      background: 
+        radial-gradient(circle at 30% 20%, rgba(0, 212, 255, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 70% 80%, rgba(124, 58, 237, 0.15) 0%, transparent 50%);
+    }
   }
 `;
 
 const HeroContent = styled.div`
-  max-width: 800px;
+  max-width: 900px;
   z-index: 1;
 `;
 
@@ -55,6 +84,9 @@ const TypewriterText = styled.span`
   color: ${props => props.theme.colors.primary};
   font-weight: 500;
   position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 
   &::after {
     content: '|';
@@ -66,6 +98,13 @@ const TypewriterText = styled.span`
     0%, 50% { opacity: 1; }
     51%, 100% { opacity: 0; }
   }
+`;
+
+const RoleIcon = styled(motion.span)`
+  display: inline-flex;
+  align-items: center;
+  margin-right: 0.5rem;
+  color: ${props => props.theme.colors.secondary};
 `;
 
 const HeroDescription = styled(motion.p)`
@@ -84,6 +123,12 @@ const ButtonGroup = styled(motion.div)`
   justify-content: center;
   flex-wrap: wrap;
   margin-bottom: 3rem;
+
+  @media (max-width: 768px) {
+    gap: 1rem;
+    flex-direction: column;
+    align-items: center;
+  }
 `;
 
 const PrimaryButton = styled(motion.a)`
@@ -103,6 +148,14 @@ const PrimaryButton = styled(motion.a)`
   &:hover {
     transform: translateY(-2px);
     box-shadow: ${props => props.theme.shadows.glowHover};
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    max-width: 280px;
+    justify-content: center;
+    padding: 1rem 1.5rem;
+    font-size: 0.95rem;
   }
 `;
 
@@ -125,6 +178,14 @@ const SecondaryButton = styled(motion.a)`
     color: ${props => props.theme.colors.background};
     transform: translateY(-2px);
   }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    max-width: 280px;
+    justify-content: center;
+    padding: 1rem 1.5rem;
+    font-size: 0.95rem;
+  }
 `;
 
 const SocialLinks = styled(motion.div)`
@@ -132,6 +193,11 @@ const SocialLinks = styled(motion.div)`
   gap: 1.5rem;
   justify-content: center;
   margin-bottom: 4rem;
+
+  @media (max-width: 768px) {
+    gap: 1rem;
+    margin-bottom: 3rem;
+  }
 `;
 
 const SocialLink = styled(motion.a)`
@@ -177,11 +243,9 @@ const ScrollText = styled.span`
 `;
 
 const roles = [
-  'Full-Stack Developer',
-  'Digital Artist',
-  'UI/UX Designer',
-  'Creative Coder',
-  'Problem Solver'
+  { text: 'Full-Stack Developer', icon: FiCode },
+  { text: 'Digital Artist', icon: FiImage },
+  { text: 'Problem Solver', icon: FiCode }
 ];
 
 const Hero = () => {
@@ -191,7 +255,7 @@ const Hero = () => {
 
   useEffect(() => {
     const typeSpeed = isDeleting ? 50 : 100;
-    const currentFullText = roles[currentRole];
+    const currentFullText = roles[currentRole].text;
 
     const timer = setTimeout(() => {
       if (!isDeleting) {
@@ -228,7 +292,7 @@ const Hero = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          Creative Developer
+          Hi, I'm Charlie Shane Rivera
         </HeroTitle>
 
         <HeroSubtitle
@@ -236,7 +300,21 @@ const Hero = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
         >
-          I'm a <TypewriterText>{displayText}</TypewriterText>
+          I'm a{' '}
+          <TypewriterText>
+            <AnimatePresence mode="wait">
+              <RoleIcon
+                key={currentRole}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.3 }}
+              >
+                {React.createElement(roles[currentRole].icon, { size: 24 })}
+              </RoleIcon>
+            </AnimatePresence>
+            {displayText}
+          </TypewriterText>
         </HeroSubtitle>
 
         <HeroDescription
@@ -244,9 +322,8 @@ const Hero = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
         >
-          Crafting digital experiences that blend innovative technology with artistic vision. 
-          I build interactive applications, create stunning visuals, and solve complex problems 
-          with clean, efficient code.
+          Crafting digital experiences that blend innovative technology with artistic vision.
+          I build interactive applications, create stunning visuals, and solve problems
         </HeroDescription>
 
         <ButtonGroup
@@ -259,9 +336,9 @@ const Hero = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            View My Work
+            View My Works
           </PrimaryButton>
-          
+
           <SecondaryButton
             href="/resume.pdf"
             target="_blank"
@@ -279,23 +356,32 @@ const Hero = () => {
           transition={{ duration: 0.8, delay: 0.8 }}
         >
           <SocialLink
-            href="https://github.com"
+            href="https://github.com/Rivera/C598"
             target="_blank"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
           >
             <FiGithub size={20} />
           </SocialLink>
-          
+
           <SocialLink
-            href="https://linkedin.com"
+            href="https://ph.linkedin.com/in/charlie-shane-rivera-5071081bb"
             target="_blank"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
           >
             <FiLinkedin size={20} />
           </SocialLink>
-          
+
+          <SocialLink
+            href="https://www.artstation.com/rvrcharles"
+            target="_blank"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+          >
+            <FiImage size={20} />
+          </SocialLink>
+
           <SocialLink
             href="mailto:your.email@example.com"
             whileHover={{ scale: 1.1 }}

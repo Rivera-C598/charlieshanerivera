@@ -35,3 +35,21 @@ notes/
 drafts/
 *.draft
 *.temp
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Guide and documentation files
+*GUIDE.md
+*-GUIDE.md
+PROJECT-STRUCTURE.md
+STYLING-ARCHITECTURE.md
+QUICK-REFERENCE.md
+PORTFOLIO-GUIDE.md
+FONT-GUIDE.md
+EMAIL-SETUP-GUIDE.md
+PORTFOLIO-REVAMP-SUMMARY.md
+create-placeholders.html
+EMAILJS-SETUP.md
