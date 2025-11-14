@@ -97,7 +97,7 @@ export const projectsData = [
     description: 'A bootleg Shopify-style e-commerce site designed for cybersecurity students to practice ethical hacking.',
     longDescription: 'An intentionally vulnerable e-commerce platform created as a learning tool for cybersecurity education. Shazada mimics popular e-commerce sites (shopee + lazada) but contains various security vulnerabilities and puzzles for students to discover and exploit in a controlled environment. This project serves as a hands-on learning platform for ethical hacking and security testing.',
     category: 'Web',
-    imageUrl: 'https://via.placeholder.com/800x600/2d3748/ff6b6b?text=Shazada&font=Arial',
+    imageUrl: '/assets/projects/shazada.png',
     technologies: ['PHP', 'Bootstrap', 'HTML', 'JavaScript', 'MySQL', 'CSS'],
     features: ['Product Catalog', 'Shopping Cart', 'User Authentication'],
     challenges: 'Creating realistic vulnerabilities that are educational but contained within a safe learning environment.',
@@ -112,7 +112,7 @@ export const projectsData = [
     description: 'Online bus reservation ticket system.',
     longDescription: 'A bus ticketing platform for universities that allows students to select route (north or south), and book tickets online in advance.',
     category: 'Web',
-    imageUrl: 'https://via.placeholder.com/800x600/2d3748/7c3aed?text=Bus+Ticketing+System&font=Arial',
+    imageUrl: '/assets/projects/bus-ticketing-system.jpg',
     technologies: ['HTML', 'Bootstrap', 'PHP', 'JavaScript', 'MySQL', 'CSS'],
     features: ['Route Search', 'Online Booking', 'Ticket Management', 'Admin Dashboard'],
     challenges: 'Managing real-time seat availability and preventing double bookings during concurrent user sessions.',
@@ -135,6 +135,28 @@ export const projectsData = [
     duration: 'Ongoing Development',
     role: 'Lead Developer & AI Engineer',
     liveLink: null,
+  },
+  {
+  "id": 10,
+  "title": "IdeaSpark",
+  "description": "A smart business idea generator that creates startup concepts from your personal profile.",
+  "longDescription": "IdeaSpark is an AI-powered web platform that helps aspiring entrepreneurs discover simple and realistic startup ideas based on their interests, skills, and available capital. By inputting a quick profile, users instantly receive three personalized business ideas—each complete with step-by-step startup guidance, basic market insights, motivational notes, and an integrated AI assistant for follow-up questions and planning support.",
+  "category": "AI",
+  "imageUrl": "/assets/projects/ideaspark.png",
+  "technologies": ["TypeScript", "React.js", "Tailwind CSS", "Firebase", "Genkit AI", "Modern UI/UX"],
+  "features": [
+    "Profile-Based Idea Generation",
+    "Three Personalized Startup Concepts",
+    "Step-by-Step Startup Roadmaps",
+    "Basic Market Analysis for Each Idea",
+    "Motivational Guidance",
+    "Integrated AI Assistant Chat"
+  ],
+  "challenges": "Designing a generation system that provides relevant, non-generic startup ideas while keeping responses simple, actionable, and aligned with the user's real constraints.",
+  "solution": "Created a structured profiling system and optimized AI prompts to generate ideas that match user interests, skills, and capital. Added validation layers and template-based reasoning to ensure each idea includes steps, market insights, and actionable guidance.",
+  "duration": "1 day",
+  "role": "Lead Developer and AI Engineer",
+  "liveLink": null
   },
 ];
 
