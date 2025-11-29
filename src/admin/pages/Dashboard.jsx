@@ -233,10 +233,16 @@ const Dashboard = () => {
   };
 
   const handleMigrateArtworks = async () => {
-    setShowConfirm(false);
-    setMigrating(true);
+    const shouldForce = stats.artworks > 0;
     
-    const result = await migrateArtworks();
+    if (shouldForce) {
+      if (!window.confirm(`You have ${stats.artworks} artworks. This will DELETE them and re-migrate all 12 artworks. Continue?`)) {
+        return;
+      }
+    }
+    
+    setMigrating(true);
+    const result = await migrateArtworks(shouldForce);
     
     if (result.success) {
       success('Migration Complete', `Successfully migrated ${result.count} artworks!`);
@@ -406,7 +412,7 @@ const Dashboard = () => {
         </ActionsGrid>
       </QuickActions>
 
-      {!loading && (stats.projects === 0 || stats.artworks === 0) && (
+      {!loading && (stats.projects === 0 || stats.artworks < 12) && (
         <QuickActions>
           <SectionTitle>Data Migration</SectionTitle>
           <ActionsGrid>
@@ -423,7 +429,7 @@ const Dashboard = () => {
               </ActionButton>
             )}
             
-            {stats.artworks === 0 && (
+            {stats.artworks < 12 && (
               <ActionButton 
                 as="button"
                 onClick={handleMigrateArtworks}
@@ -432,7 +438,9 @@ const Dashboard = () => {
                 <ActionIcon>
                   <FiDatabase size={20} />
                 </ActionIcon>
-                <ActionLabel>{migrating ? 'Migrating...' : 'Migrate Artworks'}</ActionLabel>
+                <ActionLabel>
+                  {migrating ? 'Migrating...' : stats.artworks === 0 ? 'Migrate Artworks (12)' : `Re-migrate Artworks (${stats.artworks} → 12)`}
+                </ActionLabel>
               </ActionButton>
             )}
           </ActionsGrid>
