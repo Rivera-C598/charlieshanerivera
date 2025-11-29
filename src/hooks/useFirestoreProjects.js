@@ -55,15 +55,22 @@ export const useFeaturedProjects = () => {
         setLoading(true);
         const featuredQuery = query(
           collection(db, 'projects'),
-          where('featured', '==', true),
-          orderBy('createdAt', 'desc')
+          where('featured', '==', true)
         );
         
         const snapshot = await getDocs(featuredQuery);
         const projectsData = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
-        }));
+        }))
+        // Sort by createdAt client-side to avoid needing a composite index
+        .sort((a, b) => {
+          const dateA = a.createdAt?.toDate?.() || new Date(0);
+          const dateB = b.createdAt?.toDate?.() || new Date(0);
+          return dateB - dateA; // Descending order (newest first)
+        })
+        // Limit to 2 featured projects
+        .slice(0, 2);
         
         setProjects(projectsData);
         setError(null);
