@@ -9,6 +9,7 @@ import AnimatedBackground from './AnimatedBackground';
 import { Modal, Sidebar } from './Modal';
 import { Section, SectionTitle, Description, TagsContainer, Tag } from './UI/Section';
 import { useModal } from '../hooks/useModal';
+import { useFeaturedProjects } from '../hooks/useFirestoreProjects';
 
 const ProjectsContainer = styled.section`
   padding: 8rem 2rem;
@@ -452,8 +453,21 @@ const FeaturedProjects = () => {
   const [touchedArt, setTouchedArt] = useState(null);
   const touchTimeoutRef = useRef(null);
 
+  // Fetch featured projects from Firestore
+  const { projects: firestoreProjects, loading } = useFeaturedProjects();
+
+  // Map Firestore projects to match the expected format
+  const featuredCodeProjects = firestoreProjects.map(project => ({
+    title: project.title,
+    description: project.description,
+    imageUrl: project.imageUrl,
+    tags: project.technologies || [],
+    type: 'code',
+    liveLink: project.liveUrl
+  }));
+
   // Combine all featured projects for modal functionality
-  const allFeaturedProjects = [...featuredProjects.code, ...featuredProjects.art];
+  const allFeaturedProjects = [...featuredCodeProjects, ...featuredProjects.art];
   const modal = useModal(allFeaturedProjects);
 
   // Touch handlers for mobile art effects
@@ -592,7 +606,16 @@ const FeaturedProjects = () => {
           </CategoryHeader>
 
           <ProjectsGrid>
-            {featuredProjects.code.map((project, index) => (
+            {loading ? (
+              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3rem', color: '#888' }}>
+                Loading projects...
+              </div>
+            ) : featuredCodeProjects.length === 0 ? (
+              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3rem', color: '#888' }}>
+                No featured projects yet
+              </div>
+            ) : (
+              featuredCodeProjects.map((project, index) => (
               <ProjectCard
                 key={index}
                 initial={{ opacity: 0, y: 30 }}
@@ -629,7 +652,7 @@ const FeaturedProjects = () => {
                   </ProjectTags>
                 </ProjectContent>
               </ProjectCard>
-            ))}
+            )))}
           </ProjectsGrid>
         </CategorySection>
 

@@ -144,7 +144,7 @@ npm run dev
 ### **Migration Issues**
 - **"Migration failed"**: Check Firebase console for errors
 - **"No projects migrated"**: Verify `src/data/projects.js` has data
-- **"Permission denied"**: Check Firestore security rules
+- **"Permission denied"**: Firestore rules have been set to allow all access for testing. If you still see this error, try logging out and back in, or check the Firebase console
 
 ### **Image Upload Issues**
 - **"Upload failed"**: Check Firebase Storage is enabled

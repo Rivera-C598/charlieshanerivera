@@ -6,34 +6,28 @@ service cloud.firestore {
       return request.auth != null;
     }
     
-    // Helper function to check if user is admin (specific email)
-    function isAdmin() {
-      return request.auth != null && 
-             request.auth.token.email == 'charlieshane57@gmail.com';
-    }
-    
     // Projects collection
     match /projects/{projectId} {
-      allow read: if true;  // Anyone can read
-      allow create, update, delete: if isAuthenticated();  // Any authenticated user can write
+      allow read: if true;  // Anyone can read (for public portfolio)
+      allow write: if isAuthenticated();  // Only authenticated users can write
     }
     
     // Artworks collection
     match /artworks/{artworkId} {
       allow read: if true;
-      allow create, update, delete: if isAuthenticated();
+      allow write: if isAuthenticated();
     }
     
     // Content collection (About, Skills, etc.)
     match /content/{contentId} {
       allow read: if true;
-      allow create, update, delete: if isAuthenticated();
+      allow write: if isAuthenticated();
     }
     
     // Featured items
     match /featured/{itemId} {
       allow read: if true;
-      allow create, update, delete: if isAuthenticated();
+      allow write: if isAuthenticated();
     }
   }
 }

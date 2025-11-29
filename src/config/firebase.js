@@ -18,7 +18,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 // Initialize services
-export const db = getFirestore(app);
+// Use 'database3' as the database ID
+export const db = getFirestore(app, 'database3');
 export const storage = getStorage(app);
 export const auth = getAuth(app);
 
