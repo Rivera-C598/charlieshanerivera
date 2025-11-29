@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import styled from '@emotion/styled';
 import { motion } from 'framer-motion';
-import { FiFolder, FiImage, FiStar, FiPlus } from 'react-icons/fi';
+import { FiFolder, FiImage, FiStar, FiPlus, FiDatabase } from 'react-icons/fi';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import AdminLayout from '../components/AdminLayout';
+import { migrateProjects } from '../utils/migrateData';
 
 const DashboardGrid = styled.div`
   display: grid;
@@ -76,11 +77,18 @@ const ActionButton = styled(Link)`
   gap: 1rem;
   transition: all 0.3s ease;
   color: ${props => props.theme.colors.text};
+  cursor: pointer;
 
   &:hover {
     transform: translateY(-2px);
     border-color: ${props => props.theme.colors.primary};
     box-shadow: 0 8px 25px rgba(0, 212, 255, 0.2);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
   }
 `;
 
@@ -125,6 +133,21 @@ const Dashboard = () => {
     featured: 0
   });
   const [loading, setLoading] = useState(true);
+  const [migrating, setMigrating] = useState(false);
+
+  const handleMigrate = async () => {
+    if (window.confirm('This will migrate all projects from projects.js to Firestore. Continue?')) {
+      setMigrating(true);
+      const result = await migrateProjects();
+      if (result.success) {
+        alert(`Successfully migrated ${result.count} projects!`);
+        window.location.reload();
+      } else {
+        alert('Migration failed: ' + result.error);
+      }
+      setMigrating(false);
+    }
+  };
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -248,6 +271,24 @@ const Dashboard = () => {
           </ActionButton>
         </ActionsGrid>
       </QuickActions>
+
+      {!loading && stats.projects === 0 && (
+        <QuickActions>
+          <SectionTitle>Data Migration</SectionTitle>
+          <ActionsGrid>
+            <ActionButton 
+              as="button"
+              onClick={handleMigrate}
+              disabled={migrating}
+            >
+              <ActionIcon>
+                <FiDatabase size={20} />
+              </ActionIcon>
+              <ActionLabel>{migrating ? 'Migrating...' : 'Migrate Projects'}</ActionLabel>
+            </ActionButton>
+          </ActionsGrid>
+        </QuickActions>
+      )}
     </AdminLayout>
   );
 };
