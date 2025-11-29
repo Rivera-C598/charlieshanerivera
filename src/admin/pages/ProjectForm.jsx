@@ -198,19 +198,24 @@ const ProjectForm = () => {
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(isEdit);
 
-  useEffect(() => {
-    if (isEdit) {
-      loadProject();
-    }
-  }, [id]);
-
   const loadProject = async () => {
     try {
       const docRef = doc(db, 'projects', id);
       const docSnap = await getDoc(docRef);
       
       if (docSnap.exists()) {
-        setFormData(docSnap.data());
+        const data = docSnap.data();
+        setFormData({
+          title: data.title || '',
+          description: data.description || '',
+          category: data.category || 'Web',
+          imageUrl: data.imageUrl || '',
+          technologies: data.technologies || [],
+          features: data.features || [],
+          liveUrl: data.liveUrl || '',
+          githubUrl: data.githubUrl || '',
+          featured: data.featured || false
+        });
       } else {
         alert('Project not found');
         navigate('/admin/projects');
@@ -222,6 +227,12 @@ const ProjectForm = () => {
       setLoadingData(false);
     }
   };
+
+  useEffect(() => {
+    if (isEdit) {
+      loadProject();
+    }
+  }, [id, isEdit]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;

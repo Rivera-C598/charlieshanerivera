@@ -228,7 +228,17 @@ const Projects = () => {
         </EmptyState>
       ) : (
         <ProjectsGrid>
-          {projects.map((project, index) => (
+          {projects
+            .sort((a, b) => {
+              // Featured projects first
+              if (a.featured && !b.featured) return -1;
+              if (!a.featured && b.featured) return 1;
+              // Then by creation date (newest first)
+              const dateA = a.createdAt?.toDate?.() || new Date(0);
+              const dateB = b.createdAt?.toDate?.() || new Date(0);
+              return dateB - dateA;
+            })
+            .map((project, index) => (
             <ProjectCard
               key={project.id}
               initial={{ opacity: 0, y: 20 }}
