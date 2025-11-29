@@ -16,6 +16,8 @@ import Login from './admin/pages/Login';
 import Dashboard from './admin/pages/Dashboard';
 import Projects from './admin/pages/Projects';
 import ProjectForm from './admin/pages/ProjectForm';
+import Artworks from './admin/pages/Artworks';
+import ArtworkForm from './admin/pages/ArtworkForm';
 
 const theme = {
   colors: {
@@ -163,6 +165,9 @@ function App() {
                     <Route path="/projects" element={<Projects />} />
                     <Route path="/projects/new" element={<ProjectForm />} />
                     <Route path="/projects/edit/:id" element={<ProjectForm />} />
+                    <Route path="/art" element={<Artworks />} />
+                    <Route path="/art/new" element={<ArtworkForm />} />
+                    <Route path="/art/edit/:id" element={<ArtworkForm />} />
                     {/* More admin routes will be added here */}
                   </Routes>
                 </ProtectedRoute>
