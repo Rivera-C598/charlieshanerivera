@@ -6,8 +6,16 @@ import { FiArrowRight } from 'react-icons/fi';
 import { Modal, Sidebar } from '../components/Modal';
 import { Section, SectionTitle, Description, MetadataGrid, MetadataItem, MetadataLabel, MetadataValue, TagsContainer, Tag } from '../components/UI/Section';
 import { useModal } from '../hooks/useModal';
-import { projectsData, filterCategories } from '../data/projects';
+import { useFirestoreProjects } from '../hooks/useFirestoreProjects';
 import AnimatedBackground from '../components/AnimatedBackground';
+
+// Filter categories
+const filterCategories = [
+  { key: 'All', label: 'All Projects' },
+  { key: 'Web', label: 'Web Apps' },
+  { key: 'AI', label: 'AI/ML' },
+  { key: 'Desktop', label: 'Desktop Apps' },
+];
 
 // Page-specific styled components
 const ProjectsContainer = styled.section`
@@ -44,6 +52,32 @@ const PageSubtitle = styled(motion.p)`
   max-width: 600px;
   margin-left: auto;
   margin-right: auto;
+`;
+
+const SearchContainer = styled(motion.div)`
+  max-width: 600px;
+  margin: 0 auto var(--spacing-xl);
+`;
+
+const SearchInput = styled.input`
+  width: 100%;
+  padding: 1rem 1.5rem;
+  background: var(--color-white-10);
+  border: 2px solid var(--color-white-10);
+  border-radius: var(--radius-full);
+  color: var(--color-text);
+  font-size: var(--font-base);
+  transition: all 0.3s ease;
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    background: var(--color-white-05);
+  }
+
+  &::placeholder {
+    color: var(--color-text-light);
+  }
 `;
 
 const FilterContainer = styled(motion.div)`
@@ -284,16 +318,27 @@ const CrossNavButton = styled(motion.create(Link))`
 
 const ProjectsClean = () => {
   const [filter, setFilter] = useState('All');
-  const modal = useModal(projectsData);
+  const [searchQuery, setSearchQuery] = useState('');
+  const { projects, loading, error } = useFirestoreProjects();
+  const modal = useModal(projects);
 
   // Scroll to top when component mounts
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  const filteredProjects = projectsData.filter((project) =>
-    filter === 'All' ? true : project.category === filter
-  );
+  // Filter by category and search query
+  const filteredProjects = projects.filter((project) => {
+    const matchesCategory = filter === 'All' || project.category === filter;
+    const matchesSearch = searchQuery === '' || 
+      project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      project.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (project.technologies && project.technologies.some(tech => 
+        tech.toLowerCase().includes(searchQuery.toLowerCase())
+      ));
+    
+    return matchesCategory && matchesSearch;
+  });
 
   const renderProjectModal = () => {
     if (!modal.selectedItem) return null;
@@ -326,55 +371,40 @@ const ProjectsClean = () => {
         >
           <Section>
             <SectionTitle>Description</SectionTitle>
-            <Description>{project.longDescription}</Description>
+            <Description>{project.description}</Description>
           </Section>
 
-          <Section>
-            <SectionTitle>Details</SectionTitle>
-            <MetadataGrid>
-              <MetadataItem>
-                <MetadataLabel>Duration</MetadataLabel>
-                <MetadataValue>{project.duration}</MetadataValue>
-              </MetadataItem>
-              <MetadataItem>
-                <MetadataLabel>Role</MetadataLabel>
-                <MetadataValue>{project.role}</MetadataValue>
-              </MetadataItem>
-            </MetadataGrid>
-          </Section>
+          {project.technologies && project.technologies.length > 0 && (
+            <Section>
+              <SectionTitle>Technologies</SectionTitle>
+              <TagsContainer>
+                {project.technologies.map((tech) => (
+                  <Tag key={tech} variant="accent">{tech}</Tag>
+                ))}
+              </TagsContainer>
+            </Section>
+          )}
 
-          <Section>
-            <SectionTitle>Technologies</SectionTitle>
-            <TagsContainer>
-              {project.technologies.map((tech) => (
-                <Tag key={tech} variant="accent">{tech}</Tag>
-              ))}
-            </TagsContainer>
-          </Section>
-
-          <Section>
-            <SectionTitle>Key Features</SectionTitle>
-            <FeaturesList>
-              {project.features.map((feature, index) => (
-                <FeatureItem key={index}>{feature}</FeatureItem>
-              ))}
-            </FeaturesList>
-          </Section>
-
-          <Section>
-            <SectionTitle>Challenges & Solutions</SectionTitle>
-            <ChallengeSection>
-              <Description><strong>Challenge:</strong> {project.challenges}</Description>
-            </ChallengeSection>
-            <SolutionSection>
-              <Description><strong>Solution:</strong> {project.solution}</Description>
-            </SolutionSection>
-          </Section>
+          {project.features && project.features.length > 0 && (
+            <Section>
+              <SectionTitle>Key Features</SectionTitle>
+              <FeaturesList>
+                {project.features.map((feature, index) => (
+                  <FeatureItem key={index}>{feature}</FeatureItem>
+                ))}
+              </FeaturesList>
+            </Section>
+          )}
 
           <ProjectLinks>
-            {project.liveLink && (
-              <ProjectLink href={project.liveLink} target="_blank" primary>
+            {project.liveUrl && (
+              <ProjectLink href={project.liveUrl} target="_blank" primary>
                 🔗 Live Demo
+              </ProjectLink>
+            )}
+            {project.githubUrl && (
+              <ProjectLink href={project.githubUrl} target="_blank">
+                💻 GitHub
               </ProjectLink>
             )}
           </ProjectLinks>
@@ -403,6 +433,19 @@ const ProjectsClean = () => {
           data science, and creative coding projects.
         </PageSubtitle>
 
+        <SearchContainer
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.3 }}
+        >
+          <SearchInput
+            type="text"
+            placeholder="Search projects by name, description, or technology..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </SearchContainer>
+
         <FilterContainer
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -429,23 +472,55 @@ const ProjectsClean = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.8 }}
         >
-          {filteredProjects.map((project, index) => (
-            <ProjectCard 
-              key={project.id} 
-              onClick={() => modal.openModal(project)}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 1.0 + index * 0.1 }}
-              whileHover={{ scale: 1.02 }}
-            >
-              <ProjectImage src={project.imageUrl} alt={project.title} />
-              <ProjectContent>
-                <ProjectTitle>{project.title}</ProjectTitle>
-                <ProjectCategory>{project.category}</ProjectCategory>
-                <ProjectDescription>{project.description}</ProjectDescription>
-              </ProjectContent>
-            </ProjectCard>
-          ))}
+          {loading ? (
+            <div style={{ 
+              gridColumn: '1 / -1', 
+              textAlign: 'center', 
+              padding: '4rem 2rem',
+              color: 'var(--color-text-light)',
+              fontSize: '1.2rem'
+            }}>
+              Loading projects...
+            </div>
+          ) : error ? (
+            <div style={{ 
+              gridColumn: '1 / -1', 
+              textAlign: 'center', 
+              padding: '4rem 2rem',
+              color: 'var(--color-secondary)',
+              fontSize: '1.2rem'
+            }}>
+              Error loading projects: {error}
+            </div>
+          ) : filteredProjects.length === 0 ? (
+            <div style={{ 
+              gridColumn: '1 / -1', 
+              textAlign: 'center', 
+              padding: '4rem 2rem',
+              color: 'var(--color-text-light)',
+              fontSize: '1.2rem'
+            }}>
+              No projects found in this category
+            </div>
+          ) : (
+            filteredProjects.map((project, index) => (
+              <ProjectCard 
+                key={project.id} 
+                onClick={() => modal.openModal(project)}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 1.0 + index * 0.1 }}
+                whileHover={{ scale: 1.02 }}
+              >
+                <ProjectImage src={project.imageUrl} alt={project.title} />
+                <ProjectContent>
+                  <ProjectTitle>{project.title}</ProjectTitle>
+                  <ProjectCategory>{project.category}</ProjectCategory>
+                  <ProjectDescription>{project.description}</ProjectDescription>
+                </ProjectContent>
+              </ProjectCard>
+            ))
+          )}
         </ProjectGrid>
 
         {/* Cross-Navigation to Art Gallery */}
