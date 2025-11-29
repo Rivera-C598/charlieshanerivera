@@ -90,6 +90,7 @@ const ArtworkDescription = styled.p`
 
 const Actions = styled.div`
   display: flex;
+  flex-direction: column;
   gap: 0.5rem;
 `;
 
@@ -107,7 +108,7 @@ const ActionButtonBase = styled.button`
   font-weight: 500;
   transition: all 0.3s ease;
   text-decoration: none;
-  flex: 1;
+  width: 100%;
   justify-content: center;
 
   &:hover {
@@ -131,7 +132,7 @@ const ActionLink = motion(styled(Link)`
   font-weight: 500;
   transition: all 0.3s ease;
   text-decoration: none;
-  flex: 1;
+  width: 100%;
 
   &:hover {
     background: rgba(0, 212, 255, 0.2);
