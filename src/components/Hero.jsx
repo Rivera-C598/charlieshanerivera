@@ -356,7 +356,7 @@ const Hero = () => {
           transition={{ duration: 0.8, delay: 0.8 }}
         >
           <SocialLink
-            href="https://github.com/Rivera/C598"
+            href="https://github.com/Rivera-C598"
             target="_blank"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
