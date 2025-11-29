@@ -184,16 +184,12 @@ const ProjectForm = () => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    longDescription: '',
     category: 'Web',
     imageUrl: '',
     technologies: [],
     features: [],
-    challenges: '',
-    solution: '',
-    duration: '',
-    role: '',
-    liveLink: '',
+    liveUrl: '',
+    githubUrl: '',
     featured: false
   });
 
@@ -313,24 +309,13 @@ const ProjectForm = () => {
           </FormGroup>
 
           <FormGroup>
-            <Label>Short Description *</Label>
+            <Label>Description *</Label>
             <TextArea
               name="description"
               value={formData.description}
               onChange={handleChange}
               required
-              placeholder="Brief description for project cards"
-              rows={3}
-            />
-          </FormGroup>
-
-          <FormGroup>
-            <Label>Long Description</Label>
-            <TextArea
-              name="longDescription"
-              value={formData.longDescription}
-              onChange={handleChange}
-              placeholder="Detailed description for project modal"
+              placeholder="Project description"
               rows={5}
             />
           </FormGroup>
@@ -394,57 +379,24 @@ const ProjectForm = () => {
           </FormGroup>
 
           <FormGroup>
-            <Label>Challenges</Label>
-            <TextArea
-              name="challenges"
-              value={formData.challenges}
-              onChange={handleChange}
-              placeholder="What challenges did you face?"
-              rows={3}
-            />
-          </FormGroup>
-
-          <FormGroup>
-            <Label>Solution</Label>
-            <TextArea
-              name="solution"
-              value={formData.solution}
-              onChange={handleChange}
-              placeholder="How did you solve them?"
-              rows={3}
-            />
-          </FormGroup>
-
-          <FormGroup>
-            <Label>Duration</Label>
-            <Input
-              type="text"
-              name="duration"
-              value={formData.duration}
-              onChange={handleChange}
-              placeholder="e.g., 2 months"
-            />
-          </FormGroup>
-
-          <FormGroup>
-            <Label>Your Role</Label>
-            <Input
-              type="text"
-              name="role"
-              value={formData.role}
-              onChange={handleChange}
-              placeholder="e.g., Full-Stack Developer"
-            />
-          </FormGroup>
-
-          <FormGroup>
-            <Label>Live Link</Label>
+            <Label>Live URL</Label>
             <Input
               type="url"
-              name="liveLink"
-              value={formData.liveLink}
+              name="liveUrl"
+              value={formData.liveUrl}
               onChange={handleChange}
               placeholder="https://..."
+            />
+          </FormGroup>
+
+          <FormGroup>
+            <Label>GitHub URL</Label>
+            <Input
+              type="url"
+              name="githubUrl"
+              value={formData.githubUrl}
+              onChange={handleChange}
+              placeholder="https://github.com/..."
             />
           </FormGroup>
 
