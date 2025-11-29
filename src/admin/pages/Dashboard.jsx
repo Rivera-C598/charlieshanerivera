@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import styled from '@emotion/styled';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { FiFolder, FiImage, FiStar, FiPlus, FiDatabase } from 'react-icons/fi';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import AdminLayout from '../components/AdminLayout';
+import { ToastProvider } from '../components/Toast';
+import { useToast } from '../hooks/useToast';
 import { migrateProjects } from '../utils/migrateData';
 
 const DashboardGrid = styled.div`
@@ -126,6 +128,82 @@ const WelcomeText = styled.p`
   opacity: 0.9;
 `;
 
+const ConfirmModal = styled(motion.div)`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 1rem;
+`;
+
+const ModalContent = styled(motion.div)`
+  background: ${props => props.theme.gradients.card};
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  max-width: 500px;
+  width: 100%;
+`;
+
+const ModalTitle = styled.h3`
+  font-size: 1.5rem;
+  color: ${props => props.theme.colors.text};
+  margin-bottom: 1rem;
+  font-weight: 600;
+`;
+
+const ModalText = styled.p`
+  color: ${props => props.theme.colors.lightText};
+  margin-bottom: 2rem;
+  line-height: 1.6;
+`;
+
+const ModalButtons = styled.div`
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+`;
+
+const Button = styled.button`
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  ${props => props.variant === 'primary' ? `
+    background: ${props.theme.gradients.primary};
+    color: white;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 212, 255, 0.3);
+    }
+  ` : `
+    background: rgba(255, 255, 255, 0.05);
+    color: ${props.theme.colors.text};
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+  `}
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+`;
+
 const Dashboard = () => {
   const [stats, setStats] = useState({
     projects: 0,
@@ -134,17 +212,22 @@ const Dashboard = () => {
   });
   const [loading, setLoading] = useState(true);
   const [migrating, setMigrating] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const { toasts, removeToast, success, error } = useToast();
 
   const handleMigrate = async () => {
-    if (window.confirm('This will migrate all projects from projects.js to Firestore. Continue?')) {
-      setMigrating(true);
-      const result = await migrateProjects();
-      if (result.success) {
-        alert(`Successfully migrated ${result.count} projects!`);
+    setShowConfirm(false);
+    setMigrating(true);
+    
+    const result = await migrateProjects();
+    
+    if (result.success) {
+      success('Migration Complete', `Successfully migrated ${result.count} projects!`);
+      setTimeout(() => {
         window.location.reload();
-      } else {
-        alert('Migration failed: ' + result.error);
-      }
+      }, 2000);
+    } else {
+      error('Migration Failed', result.error);
       setMigrating(false);
     }
   };
@@ -191,6 +274,40 @@ const Dashboard = () => {
 
   return (
     <AdminLayout title="Dashboard">
+      <ToastProvider toasts={toasts} onClose={removeToast} />
+      
+      <AnimatePresence>
+        {showConfirm && (
+          <ConfirmModal
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowConfirm(false)}
+          >
+            <ModalContent
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <ModalTitle>Migrate Projects?</ModalTitle>
+              <ModalText>
+                This will migrate all projects from your projects.js file to Firestore. 
+                This action will make your projects editable through the admin panel.
+              </ModalText>
+              <ModalButtons>
+                <Button onClick={() => setShowConfirm(false)}>
+                  Cancel
+                </Button>
+                <Button variant="primary" onClick={handleMigrate} disabled={migrating}>
+                  {migrating ? 'Migrating...' : 'Migrate'}
+                </Button>
+              </ModalButtons>
+            </ModalContent>
+          </ConfirmModal>
+        )}
+      </AnimatePresence>
+
       <WelcomeCard
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -278,7 +395,7 @@ const Dashboard = () => {
           <ActionsGrid>
             <ActionButton 
               as="button"
-              onClick={handleMigrate}
+              onClick={() => setShowConfirm(true)}
               disabled={migrating}
             >
               <ActionIcon>
