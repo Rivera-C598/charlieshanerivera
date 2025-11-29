@@ -4,6 +4,7 @@ import styled from '@emotion/styled';
 import { motion } from 'framer-motion';
 import { FiPlus, FiEdit, FiTrash2, FiStar } from 'react-icons/fi';
 import AdminLayout from '../components/AdminLayout';
+import FeaturedLimitModal from '../components/FeaturedLimitModal';
 import { useArtworks } from '../hooks/useArtworks';
 
 const Header = styled.div`
@@ -163,6 +164,8 @@ const LoadingState = styled.div`
 const Artworks = () => {
   const { artworks, loading, deleteArtwork, toggleFeatured } = useArtworks();
   const [deleting, setDeleting] = useState(null);
+  const [showFeaturedModal, setShowFeaturedModal] = useState(false);
+  const [pendingFeatureId, setPendingFeatureId] = useState(null);
 
   const handleDelete = async (id, title) => {
     if (window.confirm(`Delete "${title}"?`)) {
@@ -173,7 +176,30 @@ const Artworks = () => {
   };
 
   const handleToggleFeatured = async (id, currentStatus) => {
+    // If trying to feature (not unfeature)
+    if (!currentStatus) {
+      const featuredArtworks = artworks.filter(a => a.featured);
+      
+      // Check if already at limit
+      if (featuredArtworks.length >= 2) {
+        setPendingFeatureId(id);
+        setShowFeaturedModal(true);
+        return;
+      }
+    }
+    
     await toggleFeatured(id, currentStatus);
+  };
+
+  const handleUnfeatureFromModal = async (unfeaturedId) => {
+    // Unfeature the selected artwork
+    await toggleFeatured(unfeaturedId, true);
+    
+    // Feature the pending artwork
+    if (pendingFeatureId) {
+      await toggleFeatured(pendingFeatureId, false);
+      setPendingFeatureId(null);
+    }
   };
 
   if (loading) {
@@ -274,6 +300,17 @@ const Artworks = () => {
             ))}
         </ArtworksGrid>
       )}
+
+      <FeaturedLimitModal
+        isOpen={showFeaturedModal}
+        onClose={() => {
+          setShowFeaturedModal(false);
+          setPendingFeatureId(null);
+        }}
+        featuredItems={artworks.filter(a => a.featured)}
+        onUnfeature={handleUnfeatureFromModal}
+        type="artwork"
+      />
     </AdminLayout>
   );
 };

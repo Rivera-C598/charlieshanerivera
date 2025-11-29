@@ -4,6 +4,7 @@ import styled from '@emotion/styled';
 import { motion } from 'framer-motion';
 import { FiPlus, FiEdit, FiTrash2, FiStar, FiExternalLink } from 'react-icons/fi';
 import AdminLayout from '../components/AdminLayout';
+import FeaturedLimitModal from '../components/FeaturedLimitModal';
 import { useProjects } from '../hooks/useProjects';
 
 const Header = styled.div`
@@ -202,6 +203,8 @@ const LoadingState = styled.div`
 const Projects = () => {
   const { projects, loading, deleteProject, toggleFeatured } = useProjects();
   const [deleting, setDeleting] = useState(null);
+  const [showFeaturedModal, setShowFeaturedModal] = useState(false);
+  const [pendingFeatureId, setPendingFeatureId] = useState(null);
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this project?')) {
@@ -215,7 +218,30 @@ const Projects = () => {
   };
 
   const handleToggleFeatured = async (id, currentStatus) => {
+    // If trying to feature (not unfeature)
+    if (!currentStatus) {
+      const featuredProjects = projects.filter(p => p.featured);
+      
+      // Check if already at limit
+      if (featuredProjects.length >= 2) {
+        setPendingFeatureId(id);
+        setShowFeaturedModal(true);
+        return;
+      }
+    }
+    
     await toggleFeatured(id, currentStatus);
+  };
+
+  const handleUnfeatureFromModal = async (unfeaturedId) => {
+    // Unfeature the selected project
+    await toggleFeatured(unfeaturedId, true);
+    
+    // Feature the pending project
+    if (pendingFeatureId) {
+      await toggleFeatured(pendingFeatureId, false);
+      setPendingFeatureId(null);
+    }
   };
 
   if (loading) {
@@ -324,6 +350,17 @@ const Projects = () => {
           ))}
         </ProjectsGrid>
       )}
+
+      <FeaturedLimitModal
+        isOpen={showFeaturedModal}
+        onClose={() => {
+          setShowFeaturedModal(false);
+          setPendingFeatureId(null);
+        }}
+        featuredItems={projects.filter(p => p.featured)}
+        onUnfeature={handleUnfeatureFromModal}
+        type="project"
+      />
     </AdminLayout>
   );
 };
