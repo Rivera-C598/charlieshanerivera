@@ -14,6 +14,8 @@ import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './admin/components/ProtectedRoute';
 import Login from './admin/pages/Login';
 import Dashboard from './admin/pages/Dashboard';
+import Projects from './admin/pages/Projects';
+import ProjectForm from './admin/pages/ProjectForm';
 
 const theme = {
   colors: {
@@ -158,6 +160,9 @@ function App() {
                 <ProtectedRoute>
                   <Routes>
                     <Route path="/" element={<Dashboard />} />
+                    <Route path="/projects" element={<Projects />} />
+                    <Route path="/projects/new" element={<ProjectForm />} />
+                    <Route path="/projects/edit/:id" element={<ProjectForm />} />
                     {/* More admin routes will be added here */}
                   </Routes>
                 </ProtectedRoute>
