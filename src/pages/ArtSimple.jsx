@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { FiArrowRight } from 'react-icons/fi';
 import AnimatedBackground from '../components/AnimatedBackground';
+import { useFirestoreArtworks } from '../hooks/useFirestoreArtworks';
 
 const ArtContainer = styled.section`
   padding: 8rem 2rem 4rem;
@@ -649,6 +650,7 @@ const artworksData = [
 ];
 
 const ArtSimple = () => {
+  const { artworks, loading, error } = useFirestoreArtworks();
   const [selectedArtwork, setSelectedArtwork] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -661,7 +663,7 @@ const ArtSimple = () => {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
   const openModal = (artwork) => {
-    const index = artworksData.findIndex(art => art.id === artwork.id);
+    const index = artworks.findIndex(art => art.id === artwork.id);
     setCurrentIndex(index);
     setSelectedArtwork(artwork);
     setSidebarOpen(false);
@@ -676,11 +678,11 @@ const ArtSimple = () => {
 
   const navigateArtwork = (direction) => {
     const newIndex = direction === 'next'
-      ? (currentIndex + 1) % artworksData.length
-      : (currentIndex - 1 + artworksData.length) % artworksData.length;
+      ? (currentIndex + 1) % artworks.length
+      : (currentIndex - 1 + artworks.length) % artworks.length;
 
     setCurrentIndex(newIndex);
-    setSelectedArtwork(artworksData[newIndex]);
+    setSelectedArtwork(artworks[newIndex]);
     // Reset zoom and pan when changing artwork
     setImageTransform({ scale: 1, translateX: 0, translateY: 0 });
     setIsDragging(false);
@@ -805,7 +807,20 @@ const ArtSimple = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
         >
-          {artworksData.map((artwork, index) => (
+          {loading ? (
+            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '4rem', color: '#888' }}>
+              Loading artworks...
+            </div>
+          ) : error ? (
+            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '4rem', color: '#ff6b6b' }}>
+              Error loading artworks: {error}
+            </div>
+          ) : artworks.length === 0 ? (
+            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '4rem', color: '#888' }}>
+              No artworks yet
+            </div>
+          ) : (
+            artworks.map((artwork, index) => (
             <ArtItem
               key={artwork.id}
               onClick={() => openModal(artwork)}
@@ -820,7 +835,7 @@ const ArtSimple = () => {
                 <ArtDescription>{artwork.description}</ArtDescription>
               </ArtOverlay>
             </ArtItem>
-          ))}
+          )))}
         </ArtGrid>
 
         {/* Cross-Navigation to Projects */}
@@ -873,13 +888,13 @@ const ArtSimple = () => {
             <NavigationButtons>
               <NavButton
                 onClick={() => navigateArtwork('prev')}
-                disabled={artworksData.length <= 1}
+                disabled={artworks.length <= 1}
               >
                 ‹
               </NavButton>
               <NavButton
                 onClick={() => navigateArtwork('next')}
-                disabled={artworksData.length <= 1}
+                disabled={artworks.length <= 1}
               >
                 ›
               </NavButton>
