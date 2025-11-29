@@ -126,3 +126,57 @@ export const saveArtTags = async (tags) => {
   const promises = tags.map(tag => saveArtTag(tag));
   await Promise.all(promises);
 };
+
+/**
+ * One-time migration: Collect all existing tags from projects and artworks
+ */
+export const migrateExistingTags = async () => {
+  try {
+    const { collection, getDocs } = await import('firebase/firestore');
+    const { db } = await import('../../config/firebase');
+    
+    let techCount = 0;
+    let featureCount = 0;
+    let tagCount = 0;
+    
+    // Collect from projects
+    const projectsSnapshot = await getDocs(collection(db, 'projects'));
+    for (const doc of projectsSnapshot.docs) {
+      const data = doc.data();
+      
+      if (data.technologies) {
+        await saveTechnologies(data.technologies);
+        techCount += data.technologies.length;
+      }
+      
+      if (data.features) {
+        await saveFeatures(data.features);
+        featureCount += data.features.length;
+      }
+    }
+    
+    // Collect from artworks
+    const artworksSnapshot = await getDocs(collection(db, 'artworks'));
+    for (const doc of artworksSnapshot.docs) {
+      const data = doc.data();
+      
+      if (data.tags) {
+        await saveArtTags(data.tags);
+        tagCount += data.tags.length;
+      }
+    }
+    
+    return {
+      success: true,
+      technologies: techCount,
+      features: featureCount,
+      artTags: tagCount
+    };
+  } catch (error) {
+    console.error('Error migrating tags:', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};

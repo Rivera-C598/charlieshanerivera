@@ -9,6 +9,7 @@ import AdminLayout from '../components/AdminLayout';
 import { ToastProvider } from '../components/Toast';
 import { useToast } from '../hooks/useToast';
 import { migrateProjects, migrateArtworks } from '../utils/migrateData';
+import { migrateExistingTags } from '../utils/tagManager';
 
 const DashboardGrid = styled.div`
   display: grid;
@@ -255,6 +256,21 @@ const Dashboard = () => {
     }
   };
 
+  const handleMigrateTags = async () => {
+    setMigrating(true);
+    const result = await migrateExistingTags();
+    
+    if (result.success) {
+      success(
+        'Tags Collected!', 
+        `Collected ${result.technologies} technologies, ${result.features} features, and ${result.artTags} art tags!`
+      );
+    } else {
+      error('Migration Failed', result.error);
+    }
+    setMigrating(false);
+  };
+
   useEffect(() => {
     const fetchStats = async () => {
       try {
@@ -443,6 +459,24 @@ const Dashboard = () => {
                 </ActionLabel>
               </ActionButton>
             )}
+          </ActionsGrid>
+        </QuickActions>
+      )}
+
+      {!loading && stats.projects > 0 && (
+        <QuickActions>
+          <SectionTitle>Tag Management</SectionTitle>
+          <ActionsGrid>
+            <ActionButton 
+              as="button"
+              onClick={handleMigrateTags}
+              disabled={migrating}
+            >
+              <ActionIcon>
+                <FiDatabase size={20} />
+              </ActionIcon>
+              <ActionLabel>{migrating ? 'Collecting...' : 'Collect Existing Tags'}</ActionLabel>
+            </ActionButton>
           </ActionsGrid>
         </QuickActions>
       )}
