@@ -8,7 +8,7 @@ import { db } from '../../config/firebase';
 import AdminLayout from '../components/AdminLayout';
 import { ToastProvider } from '../components/Toast';
 import { useToast } from '../hooks/useToast';
-import { migrateProjects } from '../utils/migrateData';
+import { migrateProjects, migrateArtworks } from '../utils/migrateData';
 
 const DashboardGrid = styled.div`
   display: grid;
@@ -232,6 +232,23 @@ const Dashboard = () => {
     }
   };
 
+  const handleMigrateArtworks = async () => {
+    setShowConfirm(false);
+    setMigrating(true);
+    
+    const result = await migrateArtworks();
+    
+    if (result.success) {
+      success('Migration Complete', `Successfully migrated ${result.count} artworks!`);
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+    } else {
+      error('Migration Failed', result.error);
+      setMigrating(false);
+    }
+  };
+
   useEffect(() => {
     const fetchStats = async () => {
       try {
@@ -389,20 +406,35 @@ const Dashboard = () => {
         </ActionsGrid>
       </QuickActions>
 
-      {!loading && stats.projects === 0 && (
+      {!loading && (stats.projects === 0 || stats.artworks === 0) && (
         <QuickActions>
           <SectionTitle>Data Migration</SectionTitle>
           <ActionsGrid>
-            <ActionButton 
-              as="button"
-              onClick={() => setShowConfirm(true)}
-              disabled={migrating}
-            >
-              <ActionIcon>
-                <FiDatabase size={20} />
-              </ActionIcon>
-              <ActionLabel>{migrating ? 'Migrating...' : 'Migrate Projects'}</ActionLabel>
-            </ActionButton>
+            {stats.projects === 0 && (
+              <ActionButton 
+                as="button"
+                onClick={() => setShowConfirm(true)}
+                disabled={migrating}
+              >
+                <ActionIcon>
+                  <FiDatabase size={20} />
+                </ActionIcon>
+                <ActionLabel>{migrating ? 'Migrating...' : 'Migrate Projects'}</ActionLabel>
+              </ActionButton>
+            )}
+            
+            {stats.artworks === 0 && (
+              <ActionButton 
+                as="button"
+                onClick={handleMigrateArtworks}
+                disabled={migrating}
+              >
+                <ActionIcon>
+                  <FiDatabase size={20} />
+                </ActionIcon>
+                <ActionLabel>{migrating ? 'Migrating...' : 'Migrate Artworks'}</ActionLabel>
+              </ActionButton>
+            )}
           </ActionsGrid>
         </QuickActions>
       )}
