@@ -132,7 +132,7 @@ const Actions = styled.div`
   }
 `;
 
-const ActionButton = styled(motion.button)`
+const ActionButtonBase = styled.button`
   background: ${props => props.variant === 'danger' ? 'rgba(255, 107, 107, 0.1)' : 'rgba(0, 212, 255, 0.1)'};
   color: ${props => props.variant === 'danger' ? props.theme.colors.secondary : props.theme.colors.primary};
   border: 1px solid ${props => props.variant === 'danger' ? 'rgba(255, 107, 107, 0.3)' : 'rgba(0, 212, 255, 0.3)'};
@@ -146,11 +146,34 @@ const ActionButton = styled(motion.button)`
   font-size: 0.9rem;
   font-weight: 500;
   transition: all 0.3s ease;
+  text-decoration: none;
 
   &:hover {
     background: ${props => props.variant === 'danger' ? 'rgba(255, 107, 107, 0.2)' : 'rgba(0, 212, 255, 0.2)'};
   }
 `;
+
+const ActionButton = motion(ActionButtonBase);
+const ActionLink = motion(styled(Link)`
+  background: rgba(0, 212, 255, 0.1);
+  color: ${props => props.theme.colors.primary};
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  padding: 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  text-decoration: none;
+
+  &:hover {
+    background: rgba(0, 212, 255, 0.2);
+  }
+`);
 
 const EmptyState = styled.div`
   text-align: center;
@@ -268,15 +291,14 @@ const Projects = () => {
               </ProjectInfo>
 
               <Actions>
-                <ActionButton
-                  as={Link}
+                <ActionLink
                   to={`/admin/projects/edit/${project.id}`}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
                   <FiEdit size={16} />
                   Edit
-                </ActionButton>
+                </ActionLink>
                 
                 <ActionButton
                   onClick={() => handleToggleFeatured(project.id, project.featured)}

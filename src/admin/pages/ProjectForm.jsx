@@ -181,6 +181,8 @@ const ProjectForm = () => {
   const { addProject, updateProject } = useProjects();
   const isEdit = Boolean(id);
 
+  console.log('ProjectForm rendered:', { id, isEdit });
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -199,12 +201,16 @@ const ProjectForm = () => {
   const [loadingData, setLoadingData] = useState(isEdit);
 
   const loadProject = async () => {
+    console.log('Loading project with ID:', id);
     try {
       const docRef = doc(db, 'projects', id);
       const docSnap = await getDoc(docRef);
       
+      console.log('Document exists:', docSnap.exists());
+      
       if (docSnap.exists()) {
         const data = docSnap.data();
+        console.log('Loaded project data:', data);
         setFormData({
           title: data.title || '',
           description: data.description || '',
@@ -217,22 +223,24 @@ const ProjectForm = () => {
           featured: data.featured || false
         });
       } else {
+        console.error('Project not found');
         alert('Project not found');
         navigate('/admin/projects');
       }
     } catch (error) {
       console.error('Error loading project:', error);
-      alert('Failed to load project');
+      alert('Failed to load project: ' + error.message);
     } finally {
       setLoadingData(false);
     }
   };
 
   useEffect(() => {
-    if (isEdit) {
+    if (isEdit && id) {
       loadProject();
     }
-  }, [id, isEdit]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
