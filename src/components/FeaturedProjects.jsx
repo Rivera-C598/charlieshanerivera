@@ -10,6 +10,7 @@ import { Modal, Sidebar } from './Modal';
 import { Section, SectionTitle, Description, TagsContainer, Tag } from './UI/Section';
 import { useModal } from '../hooks/useModal';
 import { useFeaturedProjects } from '../hooks/useFirestoreProjects';
+import { useFeaturedArtworks } from '../hooks/useFirestoreArtworks';
 
 const ProjectsContainer = styled.section`
   padding: 8rem 2rem;
@@ -454,7 +455,8 @@ const FeaturedProjects = () => {
   const touchTimeoutRef = useRef(null);
 
   // Fetch featured projects from Firestore
-  const { projects: firestoreProjects, loading } = useFeaturedProjects();
+  const { projects: firestoreProjects, loading: loadingProjects } = useFeaturedProjects();
+  const { artworks: firestoreArtworks, loading: loadingArtworks } = useFeaturedArtworks();
 
   // Map Firestore projects to match the expected format
   const featuredCodeProjects = firestoreProjects.map(project => ({
@@ -466,8 +468,19 @@ const FeaturedProjects = () => {
     liveLink: project.liveUrl
   }));
 
+  // Map Firestore artworks to match the expected format
+  const featuredArtProjects = firestoreArtworks.map(artwork => ({
+    title: artwork.title,
+    description: artwork.description,
+    imageUrl: artwork.imageUrl,
+    tags: artwork.tags || [],
+    type: 'art',
+    isTransparent: false,
+    featured: true
+  }));
+
   // Combine all featured projects for modal functionality
-  const allFeaturedProjects = [...featuredCodeProjects, ...featuredProjects.art];
+  const allFeaturedProjects = [...featuredCodeProjects, ...featuredArtProjects];
   const modal = useModal(allFeaturedProjects);
 
   // Touch handlers for mobile art effects
@@ -606,7 +619,7 @@ const FeaturedProjects = () => {
           </CategoryHeader>
 
           <ProjectsGrid>
-            {loading ? (
+            {loadingProjects ? (
               <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3rem', color: '#888' }}>
                 Loading projects...
               </div>
@@ -679,7 +692,16 @@ const FeaturedProjects = () => {
           </CategoryHeader>
 
           <ProjectsGrid>
-            {featuredProjects.art.map((project, index) => {
+            {loadingArtworks ? (
+              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3rem', color: '#888' }}>
+                Loading artworks...
+              </div>
+            ) : featuredArtProjects.length === 0 ? (
+              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3rem', color: '#888' }}>
+                No featured artworks yet
+              </div>
+            ) : (
+              featuredArtProjects.map((project, index) => {
               const isHovered = hoveredArt?.title === project.title;
               const theme = project.title === "Ashes Beneath the Orbit's Roar" ? 'fire' : 'void';
 
@@ -757,7 +779,7 @@ const FeaturedProjects = () => {
                   </ProjectContent>
                 </ProjectCard>
               );
-            })}
+            }))}
           </ProjectsGrid>
         </CategorySection>
       </Container>
