@@ -153,7 +153,7 @@ const Footer = () => {
 
         <SocialLinks>
           <SocialLink
-            href="https://github.com/Rivera/C598"
+            href="https://github.com/Rivera-C598"
             target="_blank"
             rel="noopener noreferrer"
             whileHover={{ scale: 1.1 }}
