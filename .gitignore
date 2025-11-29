@@ -53,3 +53,6 @@ EMAIL-SETUP-GUIDE.md
 PORTFOLIO-REVAMP-SUMMARY.md
 create-placeholders.html
 EMAILJS-SETUP.md
+
+# Exclude docs folder
+docs/
