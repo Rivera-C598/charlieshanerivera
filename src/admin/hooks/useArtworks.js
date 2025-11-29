@@ -11,6 +11,7 @@ import {
   serverTimestamp 
 } from 'firebase/firestore';
 import { db } from '../../config/firebase';
+import { saveArtTags } from '../utils/tagManager';
 
 export const useArtworks = () => {
   const [artworks, setArtworks] = useState([]);
@@ -47,6 +48,10 @@ export const useArtworks = () => {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });
+      
+      // Auto-save art tags
+      await saveArtTags(artworkData.tags);
+      
       await fetchArtworks();
       return { success: true, id: docRef.id };
     } catch (err) {
@@ -62,6 +67,10 @@ export const useArtworks = () => {
         ...artworkData,
         updatedAt: serverTimestamp()
       });
+      
+      // Auto-save art tags
+      await saveArtTags(artworkData.tags);
+      
       await fetchArtworks();
       return { success: true };
     } catch (err) {

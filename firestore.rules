@@ -29,5 +29,21 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isAuthenticated();
     }
+    
+    // Tag collections
+    match /technologies/{techId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+    
+    match /features/{featureId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+    
+    match /artTags/{tagId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
   }
 }

@@ -11,6 +11,7 @@ import {
   serverTimestamp 
 } from 'firebase/firestore';
 import { db } from '../../config/firebase';
+import { saveTechnologies, saveFeatures } from '../utils/tagManager';
 
 export const useProjects = () => {
   const [projects, setProjects] = useState([]);
@@ -47,6 +48,11 @@ export const useProjects = () => {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });
+      
+      // Auto-save technologies and features
+      await saveTechnologies(projectData.technologies);
+      await saveFeatures(projectData.features);
+      
       await fetchProjects();
       return { success: true, id: docRef.id };
     } catch (err) {
@@ -62,6 +68,11 @@ export const useProjects = () => {
         ...projectData,
         updatedAt: serverTimestamp()
       });
+      
+      // Auto-save technologies and features
+      await saveTechnologies(projectData.technologies);
+      await saveFeatures(projectData.features);
+      
       await fetchProjects();
       return { success: true };
     } catch (err) {
