@@ -9,6 +9,12 @@ import Home from './pages/Home';
 import ProjectsClean from './pages/ProjectsClean';
 import ArtSimple from './pages/ArtSimple';
 
+// Admin imports
+import { AuthProvider } from './contexts/AuthContext';
+import ProtectedRoute from './admin/components/ProtectedRoute';
+import Login from './admin/pages/Login';
+import Dashboard from './admin/pages/Dashboard';
+
 const theme = {
   colors: {
     primary: '#00d4ff',
@@ -142,17 +148,41 @@ function App() {
     <ThemeProvider theme={theme}>
       <Global styles={GlobalStyles} />
       <BrowserRouter>
-        <AppContainer>
-          <Navbar />
-          <PageContainer>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/projects" element={<ProjectsClean />} />
-              <Route path="/art" element={<ArtSimple />} />
-            </Routes>
-          </PageContainer>
-          <Footer />
-        </AppContainer>
+        <AuthProvider>
+          <Routes>
+            {/* Admin Routes */}
+            <Route path="/admin/login" element={<Login />} />
+            <Route 
+              path="/admin/*" 
+              element={
+                <ProtectedRoute>
+                  <Routes>
+                    <Route path="/" element={<Dashboard />} />
+                    {/* More admin routes will be added here */}
+                  </Routes>
+                </ProtectedRoute>
+              } 
+            />
+
+            {/* Public Routes */}
+            <Route 
+              path="/*" 
+              element={
+                <AppContainer>
+                  <Navbar />
+                  <PageContainer>
+                    <Routes>
+                      <Route path="/" element={<Home />} />
+                      <Route path="/projects" element={<ProjectsClean />} />
+                      <Route path="/art" element={<ArtSimple />} />
+                    </Routes>
+                  </PageContainer>
+                  <Footer />
+                </AppContainer>
+              } 
+            />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </ThemeProvider>
   );
