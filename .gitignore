@@ -57,5 +57,8 @@ EMAILJS-SETUP.md
 # Exclude docs folder
 docs/
 
+# Exclude development documentation
+dev-docs/
+
 # Exclude Google IDX environment folder
 .idx/

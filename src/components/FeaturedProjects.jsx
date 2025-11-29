@@ -194,7 +194,7 @@ const ParticlesContainer = styled.div`
 
 const ArtTitle = styled(motion.div)`
   position: absolute;
-  bottom: -60px;
+  bottom: -35px;
   left: 50%;
   transform: translateX(-50%);
   text-align: center;
@@ -464,20 +464,52 @@ const FeaturedProjects = () => {
     description: project.description,
     imageUrl: project.imageUrl,
     tags: project.technologies || [],
+    features: project.features || [],
     type: 'code',
     liveLink: project.liveUrl
   }));
 
   // Map Firestore artworks to match the expected format
-  const featuredArtProjects = firestoreArtworks.map(artwork => ({
-    title: artwork.title,
-    description: artwork.description,
-    imageUrl: artwork.imageUrl,
-    tags: artwork.tags || [],
-    type: 'art',
-    isTransparent: false,
-    featured: true
-  }));
+  const featuredArtProjects = firestoreArtworks.map(artwork => {
+    // Check if this artwork has a transparent version (check both URL and title)
+    const titleLower = artwork.title?.toLowerCase() || '';
+    const urlLower = artwork.imageUrl?.toLowerCase() || '';
+    
+    const isAshes = urlLower.includes('ashes-beneath') || 
+                    urlLower.includes('ashes_beneath') ||
+                    titleLower.includes('ashes beneath');
+    const isCeles = urlLower.includes('celes-remastered') || 
+                    urlLower.includes('celes_remastered') ||
+                    titleLower.includes('celes');
+    const isTransparent = isAshes || isCeles;
+    
+    // For transparent artworks, use the transparent version for display
+    // and the background version for the modal
+    let displayUrl = artwork.imageUrl;
+    let galleryUrl = artwork.imageUrl;
+    
+    if (isAshes) {
+      displayUrl = '/assets/art/ashes-beneath-orbits-roar.png';
+      galleryUrl = '/assets/art/ashes-beneath-orbits-roar-bg.png';
+    } else if (isCeles) {
+      displayUrl = '/assets/art/celes-remastered.png';
+      galleryUrl = '/assets/art/celes-remastered-bg.png';
+    }
+    
+    // Debug log
+    console.log('Artwork:', artwork.title, 'isTransparent:', isTransparent, 'isAshes:', isAshes, 'isCeles:', isCeles);
+    
+    return {
+      title: artwork.title,
+      description: artwork.description,
+      imageUrl: displayUrl,
+      galleryImageUrl: galleryUrl,
+      tags: artwork.tags || [],
+      type: 'art',
+      isTransparent,
+      featured: true
+    };
+  });
 
   // Combine all featured projects for modal functionality
   const allFeaturedProjects = [...featuredCodeProjects, ...featuredArtProjects];
@@ -736,7 +768,9 @@ const FeaturedProjects = () => {
                     />
                   </ParticlesContainer>
                   <SpecialArtImage src={project.imageUrl} alt={project.title} />
-                  {/* Art title hidden as requested */}
+                  <ArtTitle show={isHovered} theme={theme}>
+                    <ArtTitleText theme={theme}>{project.title}</ArtTitleText>
+                  </ArtTitle>
                 </SpecialArtCard>
               ) : (
                 <ProjectCard
@@ -831,14 +865,38 @@ const FeaturedProjects = () => {
               <Description>{modal.selectedItem.description}</Description>
             </Section>
 
-            <Section>
-              <SectionTitle>Technologies</SectionTitle>
-              <TagsContainer>
-                {modal.selectedItem.tags.map((tag) => (
-                  <Tag key={tag} variant="accent">{tag}</Tag>
-                ))}
-              </TagsContainer>
-            </Section>
+            {modal.selectedItem.type === 'code' ? (
+              <>
+                <Section>
+                  <SectionTitle>Technologies</SectionTitle>
+                  <TagsContainer>
+                    {modal.selectedItem.tags.map((tag) => (
+                      <Tag key={tag} variant="accent">{tag}</Tag>
+                    ))}
+                  </TagsContainer>
+                </Section>
+
+                {modal.selectedItem.features && modal.selectedItem.features.length > 0 && (
+                  <Section>
+                    <SectionTitle>Key Features</SectionTitle>
+                    <TagsContainer>
+                      {modal.selectedItem.features.map((feature) => (
+                        <Tag key={feature} variant="primary">{feature}</Tag>
+                      ))}
+                    </TagsContainer>
+                  </Section>
+                )}
+              </>
+            ) : (
+              <Section>
+                <SectionTitle>Tags</SectionTitle>
+                <TagsContainer>
+                  {modal.selectedItem.tags.map((tag) => (
+                    <Tag key={tag} variant="accent">{tag}</Tag>
+                  ))}
+                </TagsContainer>
+              </Section>
+            )}
 
             {modal.selectedItem.type === 'code' && modal.selectedItem.liveLink && (
               <div style={{

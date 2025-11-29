@@ -43,6 +43,24 @@ export const useArtworks = () => {
 
   const addArtwork = async (artworkData) => {
     try {
+      // Check featured limit if trying to feature this artwork
+      if (artworkData.featured) {
+        const featuredQuery = query(
+          collection(db, 'artworks'),
+          orderBy('createdAt', 'desc')
+        );
+        const snapshot = await getDocs(featuredQuery);
+        const featuredCount = snapshot.docs.filter(doc => doc.data().featured).length;
+        
+        if (featuredCount >= 2) {
+          return { 
+            success: false, 
+            error: 'Maximum 2 featured artworks allowed. Please unfeature another artwork first.',
+            needsSelection: true
+          };
+        }
+      }
+      
       const docRef = await addDoc(collection(db, 'artworks'), {
         ...artworkData,
         createdAt: serverTimestamp(),
@@ -62,6 +80,26 @@ export const useArtworks = () => {
 
   const updateArtwork = async (id, artworkData) => {
     try {
+      // Check featured limit if trying to feature this artwork
+      if (artworkData.featured) {
+        const featuredQuery = query(
+          collection(db, 'artworks'),
+          orderBy('createdAt', 'desc')
+        );
+        const snapshot = await getDocs(featuredQuery);
+        const featuredArtworks = snapshot.docs.filter(doc => 
+          doc.data().featured && doc.id !== id // Exclude current artwork
+        );
+        
+        if (featuredArtworks.length >= 2) {
+          return { 
+            success: false, 
+            error: 'Maximum 2 featured artworks allowed. Please unfeature another artwork first.',
+            needsSelection: true
+          };
+        }
+      }
+      
       const artworkRef = doc(db, 'artworks', id);
       await updateDoc(artworkRef, {
         ...artworkData,

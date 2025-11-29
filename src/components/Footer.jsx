@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
 import styled from '@emotion/styled';
 import { motion } from 'framer-motion';
 import { FiHeart, FiGithub, FiLinkedin, FiImage } from 'react-icons/fi';
+import { usePortfolioLikes } from '../hooks/usePortfolioLikes';
 
 const FooterContainer = styled.footer`
   background: ${props => props.theme.gradients.dark};
@@ -91,63 +91,30 @@ const Copyright = styled.p`
 `;
 
 const Footer = () => {
-  const [likes, setLikes] = useState(0);
-  const [liked, setLiked] = useState(false);
-
-  // Load likes from localStorage on component mount
-  useEffect(() => {
-    const savedLikes = localStorage.getItem('portfolio-likes');
-    const userLiked = localStorage.getItem('user-liked-portfolio');
-    
-    if (savedLikes) {
-      setLikes(parseInt(savedLikes, 10));
-    } else {
-      // Set initial likes count
-      setLikes(0);
-      localStorage.setItem('portfolio-likes', '0');
-    }
-    
-    if (userLiked === 'true') {
-      setLiked(true);
-    }
-  }, []);
-
-  const handleLike = () => {
-    if (!liked) {
-      // User is liking for the first time
-      const newLikes = likes + 1;
-      setLikes(newLikes);
-      setLiked(true);
-      localStorage.setItem('portfolio-likes', newLikes.toString());
-      localStorage.setItem('user-liked-portfolio', 'true');
-    } else {
-      // User is unliking
-      const newLikes = likes - 1;
-      setLikes(newLikes);
-      setLiked(false);
-      localStorage.setItem('portfolio-likes', newLikes.toString());
-      localStorage.setItem('user-liked-portfolio', 'false');
-    }
-  };
+  const { totalLikes, userLiked, loading, toggleLike, likedToday } = usePortfolioLikes();
 
   return (
     <FooterContainer>
       <Container>
         <LikeSection>
           <LikeButton
-            liked={liked}
-            onClick={handleLike}
+            liked={userLiked}
+            onClick={toggleLike}
+            disabled={loading}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
             <FiHeart 
               size={20} 
-              fill={liked ? 'currentColor' : 'none'}
+              fill={userLiked ? 'currentColor' : 'none'}
             />
-            {liked ? 'Thanks for the love!' : 'Like this portfolio'}
+            {loading ? 'Loading...' : 
+             userLiked ? 'Thanks for the love!' : 
+             likedToday ? 'Already liked today ❤️' : 
+             'Like this portfolio'}
           </LikeButton>
           <LikeCount>
-            {likes} {likes === 1 ? 'person likes' : 'people like'} this portfolio
+            {totalLikes} {totalLikes === 1 ? 'person likes' : 'people like'} this portfolio
           </LikeCount>
         </LikeSection>
 

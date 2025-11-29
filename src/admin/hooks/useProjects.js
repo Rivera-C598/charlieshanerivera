@@ -43,6 +43,24 @@ export const useProjects = () => {
 
   const addProject = async (projectData) => {
     try {
+      // Check featured limit if trying to feature this project
+      if (projectData.featured) {
+        const featuredQuery = query(
+          collection(db, 'projects'),
+          orderBy('createdAt', 'desc')
+        );
+        const snapshot = await getDocs(featuredQuery);
+        const featuredCount = snapshot.docs.filter(doc => doc.data().featured).length;
+        
+        if (featuredCount >= 2) {
+          return { 
+            success: false, 
+            error: 'Maximum 2 featured projects allowed. Please unfeature another project first.',
+            needsSelection: true
+          };
+        }
+      }
+      
       const docRef = await addDoc(collection(db, 'projects'), {
         ...projectData,
         createdAt: serverTimestamp(),
@@ -63,6 +81,26 @@ export const useProjects = () => {
 
   const updateProject = async (id, projectData) => {
     try {
+      // Check featured limit if trying to feature this project
+      if (projectData.featured) {
+        const featuredQuery = query(
+          collection(db, 'projects'),
+          orderBy('createdAt', 'desc')
+        );
+        const snapshot = await getDocs(featuredQuery);
+        const featuredProjects = snapshot.docs.filter(doc => 
+          doc.data().featured && doc.id !== id // Exclude current project
+        );
+        
+        if (featuredProjects.length >= 2) {
+          return { 
+            success: false, 
+            error: 'Maximum 2 featured projects allowed. Please unfeature another project first.',
+            needsSelection: true
+          };
+        }
+      }
+      
       const projectRef = doc(db, 'projects', id);
       await updateDoc(projectRef, {
         ...projectData,

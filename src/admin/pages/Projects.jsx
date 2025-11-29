@@ -5,6 +5,9 @@ import { motion } from 'framer-motion';
 import { FiPlus, FiEdit, FiTrash2, FiStar, FiExternalLink } from 'react-icons/fi';
 import AdminLayout from '../components/AdminLayout';
 import FeaturedLimitModal from '../components/FeaturedLimitModal';
+import ConfirmDialog from '../components/ConfirmDialog';
+import { ToastProvider } from '../components/Toast';
+import { useToast } from '../hooks/useToast';
 import { useProjects } from '../hooks/useProjects';
 
 const Header = styled.div`
@@ -203,18 +206,27 @@ const LoadingState = styled.div`
 const Projects = () => {
   const { projects, loading, deleteProject, toggleFeatured } = useProjects();
   const [deleting, setDeleting] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const { toasts, removeToast, success, error } = useToast();
   const [showFeaturedModal, setShowFeaturedModal] = useState(false);
   const [pendingFeatureId, setPendingFeatureId] = useState(null);
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this project?')) {
-      setDeleting(id);
-      const result = await deleteProject(id);
-      if (!result.success) {
-        alert('Failed to delete project');
-      }
-      setDeleting(null);
+    setDeleteConfirm(id);
+  };
+
+  const confirmDelete = async () => {
+    const id = deleteConfirm;
+    setDeleting(id);
+    setDeleteConfirm(null);
+    
+    const result = await deleteProject(id);
+    if (result.success) {
+      success('Project Deleted', 'Project has been successfully deleted');
+    } else {
+      error('Delete Failed', result.error || 'Failed to delete project');
     }
+    setDeleting(null);
   };
 
   const handleToggleFeatured = async (id, currentStatus) => {
@@ -254,6 +266,7 @@ const Projects = () => {
 
   return (
     <AdminLayout title="Projects">
+      <ToastProvider toasts={toasts} onClose={removeToast} />
       <Header>
         <div>
           <p style={{ color: '#a0a0a0', marginTop: '0.5rem' }}>
@@ -360,6 +373,18 @@ const Projects = () => {
         featuredItems={projects.filter(p => p.featured)}
         onUnfeature={handleUnfeatureFromModal}
         type="project"
+      />
+
+      <ConfirmDialog
+        isOpen={deleteConfirm !== null}
+        onClose={() => setDeleteConfirm(null)}
+        onConfirm={confirmDelete}
+        title="Delete Project?"
+        message="Are you sure you want to delete this project? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+        loading={deleting !== null}
       />
     </AdminLayout>
   );

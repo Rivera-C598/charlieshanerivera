@@ -8,6 +8,8 @@ import { db } from '../../config/firebase';
 import AdminLayout from '../components/AdminLayout';
 import ImageUpload from '../components/ImageUpload';
 import TagInputWithSuggestions from '../components/TagInputWithSuggestions';
+import { ToastProvider } from '../components/Toast';
+import { useToast } from '../hooks/useToast';
 import { useArtworks } from '../hooks/useArtworks';
 import { useArtTags } from '../hooks/useTags';
 
@@ -159,6 +161,7 @@ const Button = styled(motion.button)`
 const ArtworkForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { toasts, removeToast, success, error } = useToast();
   const { addArtwork, updateArtwork } = useArtworks();
   const { artTags: tagSuggestions } = useArtTags();
   const isEdit = Boolean(id);
@@ -243,12 +246,15 @@ const ArtworkForm = () => {
       : await addArtwork(formData);
 
     if (result.success) {
-      navigate('/admin/art');
+      success(
+        isEdit ? 'Artwork Updated' : 'Artwork Created',
+        isEdit ? 'Artwork has been successfully updated' : 'Artwork has been successfully created'
+      );
+      setTimeout(() => navigate('/admin/art'), 1500);
     } else {
-      alert('Failed to save artwork: ' + result.error);
+      error('Save Failed', result.error || 'Failed to save artwork');
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   if (loadingData) {
@@ -261,6 +267,7 @@ const ArtworkForm = () => {
 
   return (
     <AdminLayout title={isEdit ? 'Edit Artwork' : 'Add Artwork'}>
+      <ToastProvider toasts={toasts} onClose={removeToast} />
       <Form onSubmit={handleSubmit}>
         <FormGrid>
           <FormGroup>

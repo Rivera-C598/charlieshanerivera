@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import styled from '@emotion/styled';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiFolder, FiImage, FiStar, FiPlus, FiDatabase } from 'react-icons/fi';
+import { FiFolder, FiImage, FiStar, FiPlus, FiDatabase, FiHeart } from 'react-icons/fi';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import AdminLayout from '../components/AdminLayout';
@@ -10,6 +10,7 @@ import { ToastProvider } from '../components/Toast';
 import { useToast } from '../hooks/useToast';
 import { migrateProjects, migrateArtworks } from '../utils/migrateData';
 import { migrateExistingTags } from '../utils/tagManager';
+import { useAllLikes } from '../../hooks/usePortfolioLikes';
 
 const DashboardGrid = styled.div`
   display: grid;
@@ -209,12 +210,14 @@ const Dashboard = () => {
   const [stats, setStats] = useState({
     projects: 0,
     artworks: 0,
-    featured: 0
+    featured: 0,
+    tags: 0
   });
   const [loading, setLoading] = useState(true);
   const [migrating, setMigrating] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const { toasts, removeToast, success, error } = useToast();
+  const { stats: likeStats } = useAllLikes();
 
   const handleMigrate = async () => {
     setShowConfirm(false);
@@ -296,10 +299,17 @@ const Dashboard = () => {
         const featuredArtworks = await getDocs(featuredArtworksQuery);
         const featuredCount = featuredProjects.size + featuredArtworks.size;
 
+        // Count total tags
+        const techSnapshot = await getDocs(collection(db, 'technologies'));
+        const featuresSnapshot = await getDocs(collection(db, 'features'));
+        const artTagsSnapshot = await getDocs(collection(db, 'artTags'));
+        const totalTags = techSnapshot.size + featuresSnapshot.size + artTagsSnapshot.size;
+
         setStats({
           projects: projectsCount,
           artworks: artworksCount,
-          featured: featuredCount
+          featured: featuredCount,
+          tags: totalTags
         });
       } catch (error) {
         console.error('Error fetching stats:', error);
@@ -393,6 +403,18 @@ const Dashboard = () => {
           <StatValue>{loading ? '...' : stats.featured}</StatValue>
           <StatLabel>Featured Items</StatLabel>
         </StatCard>
+
+        <StatCard
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+        >
+          <StatIcon color="linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%)">
+            <FiHeart size={24} />
+          </StatIcon>
+          <StatValue>{likeStats.total}</StatValue>
+          <StatLabel>Portfolio Likes</StatLabel>
+        </StatCard>
       </DashboardGrid>
 
       <QuickActions>
@@ -424,6 +446,13 @@ const Dashboard = () => {
               <FiImage size={20} />
             </ActionIcon>
             <ActionLabel>Manage Art</ActionLabel>
+          </ActionButton>
+
+          <ActionButton to="/admin/analytics">
+            <ActionIcon>
+              <FiHeart size={20} />
+            </ActionIcon>
+            <ActionLabel>View Analytics</ActionLabel>
           </ActionButton>
         </ActionsGrid>
       </QuickActions>
@@ -463,7 +492,7 @@ const Dashboard = () => {
         </QuickActions>
       )}
 
-      {!loading && stats.projects > 0 && (
+      {!loading && stats.projects > 0 && stats.tags === 0 && (
         <QuickActions>
           <SectionTitle>Tag Management</SectionTitle>
           <ActionsGrid>

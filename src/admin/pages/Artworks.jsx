@@ -5,6 +5,9 @@ import { motion } from 'framer-motion';
 import { FiPlus, FiEdit, FiTrash2, FiStar } from 'react-icons/fi';
 import AdminLayout from '../components/AdminLayout';
 import FeaturedLimitModal from '../components/FeaturedLimitModal';
+import ConfirmDialog from '../components/ConfirmDialog';
+import { ToastProvider } from '../components/Toast';
+import { useToast } from '../hooks/useToast';
 import { useArtworks } from '../hooks/useArtworks';
 
 const Header = styled.div`
@@ -165,15 +168,27 @@ const LoadingState = styled.div`
 const Artworks = () => {
   const { artworks, loading, deleteArtwork, toggleFeatured } = useArtworks();
   const [deleting, setDeleting] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const { toasts, removeToast, success, error } = useToast();
   const [showFeaturedModal, setShowFeaturedModal] = useState(false);
   const [pendingFeatureId, setPendingFeatureId] = useState(null);
 
   const handleDelete = async (id, title) => {
-    if (window.confirm(`Delete "${title}"?`)) {
-      setDeleting(id);
-      await deleteArtwork(id);
-      setDeleting(null);
+    setDeleteConfirm({ id, title });
+  };
+
+  const confirmDelete = async () => {
+    const { id, title } = deleteConfirm;
+    setDeleting(id);
+    setDeleteConfirm(null);
+    
+    const result = await deleteArtwork(id);
+    if (result.success) {
+      success('Artwork Deleted', `"${title}" has been successfully deleted`);
+    } else {
+      error('Delete Failed', result.error || 'Failed to delete artwork');
     }
+    setDeleting(null);
   };
 
   const handleToggleFeatured = async (id, currentStatus) => {
@@ -213,6 +228,7 @@ const Artworks = () => {
 
   return (
     <AdminLayout title="Artworks">
+      <ToastProvider toasts={toasts} onClose={removeToast} />
       <Header>
         <div>
           <p style={{ color: '#a0a0a0', marginTop: '0.5rem' }}>
@@ -311,6 +327,18 @@ const Artworks = () => {
         featuredItems={artworks.filter(a => a.featured)}
         onUnfeature={handleUnfeatureFromModal}
         type="artwork"
+      />
+
+      <ConfirmDialog
+        isOpen={deleteConfirm !== null}
+        onClose={() => setDeleteConfirm(null)}
+        onConfirm={confirmDelete}
+        title="Delete Artwork?"
+        message={`Are you sure you want to delete "${deleteConfirm?.title}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+        loading={deleting !== null}
       />
     </AdminLayout>
   );

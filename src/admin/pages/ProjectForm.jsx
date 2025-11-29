@@ -8,6 +8,8 @@ import { db } from '../../config/firebase';
 import AdminLayout from '../components/AdminLayout';
 import ImageUpload from '../components/ImageUpload';
 import TagInputWithSuggestions from '../components/TagInputWithSuggestions';
+import { ToastProvider } from '../components/Toast';
+import { useToast } from '../hooks/useToast';
 import { useProjects } from '../hooks/useProjects';
 import { useTechnologies, useFeatures } from '../hooks/useTags';
 
@@ -180,6 +182,7 @@ const Button = styled(motion.button)`
 const ProjectForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { toasts, removeToast, success, error } = useToast();
   const { addProject, updateProject } = useProjects();
   const { technologies: techSuggestions } = useTechnologies();
   const { features: featureSuggestions } = useFeatures();
@@ -299,12 +302,15 @@ const ProjectForm = () => {
       : await addProject(formData);
 
     if (result.success) {
-      navigate('/admin/projects');
+      success(
+        isEdit ? 'Project Updated' : 'Project Created',
+        isEdit ? 'Project has been successfully updated' : 'Project has been successfully created'
+      );
+      setTimeout(() => navigate('/admin/projects'), 1500);
     } else {
-      alert('Failed to save project: ' + result.error);
+      error('Save Failed', result.error || 'Failed to save project');
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   if (loadingData) {
@@ -317,6 +323,7 @@ const ProjectForm = () => {
 
   return (
     <AdminLayout title={isEdit ? 'Edit Project' : 'Add Project'}>
+      <ToastProvider toasts={toasts} onClose={removeToast} />
       <Form onSubmit={handleSubmit}>
         <FormGrid>
           <FormGroup>
