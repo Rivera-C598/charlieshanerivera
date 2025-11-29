@@ -7,7 +7,9 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import AdminLayout from '../components/AdminLayout';
 import ImageUpload from '../components/ImageUpload';
+import TagInputWithSuggestions from '../components/TagInputWithSuggestions';
 import { useProjects } from '../hooks/useProjects';
+import { useTechnologies, useFeatures } from '../hooks/useTags';
 
 const Form = styled.form`
   max-width: 800px;
@@ -179,6 +181,8 @@ const ProjectForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addProject, updateProject } = useProjects();
+  const { technologies: techSuggestions } = useTechnologies();
+  const { features: featureSuggestions } = useFeatures();
   const isEdit = Boolean(id);
 
   console.log('ProjectForm rendered:', { id, isEdit });
@@ -357,44 +361,22 @@ const ProjectForm = () => {
 
           <FormGroup>
             <Label>Technologies</Label>
-            <TagInput>
-              {formData.technologies.map((tech, index) => (
-                <Tag key={index}>
-                  {tech}
-                  <TagRemove type="button" onClick={() => handleRemoveTech(index)}>
-                    <FiX size={14} />
-                  </TagRemove>
-                </Tag>
-              ))}
-              <TagInputField
-                type="text"
-                value={techInput}
-                onChange={(e) => setTechInput(e.target.value)}
-                onKeyDown={handleAddTech}
-                placeholder="Type and press Enter"
-              />
-            </TagInput>
+            <TagInputWithSuggestions
+              value={formData.technologies}
+              onChange={(technologies) => setFormData(prev => ({ ...prev, technologies }))}
+              suggestions={techSuggestions}
+              placeholder="Type to search technologies..."
+            />
           </FormGroup>
 
           <FormGroup>
             <Label>Features</Label>
-            <TagInput>
-              {formData.features.map((feature, index) => (
-                <Tag key={index}>
-                  {feature}
-                  <TagRemove type="button" onClick={() => handleRemoveFeature(index)}>
-                    <FiX size={14} />
-                  </TagRemove>
-                </Tag>
-              ))}
-              <TagInputField
-                type="text"
-                value={featureInput}
-                onChange={(e) => setFeatureInput(e.target.value)}
-                onKeyDown={handleAddFeature}
-                placeholder="Type and press Enter"
-              />
-            </TagInput>
+            <TagInputWithSuggestions
+              value={formData.features}
+              onChange={(features) => setFormData(prev => ({ ...prev, features }))}
+              suggestions={featureSuggestions}
+              placeholder="Type to search features..."
+            />
           </FormGroup>
 
           <FormGroup>

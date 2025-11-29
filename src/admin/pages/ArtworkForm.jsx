@@ -7,7 +7,9 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import AdminLayout from '../components/AdminLayout';
 import ImageUpload from '../components/ImageUpload';
+import TagInputWithSuggestions from '../components/TagInputWithSuggestions';
 import { useArtworks } from '../hooks/useArtworks';
+import { useArtTags } from '../hooks/useTags';
 
 const Form = styled.form`
   max-width: 800px;
@@ -158,6 +160,7 @@ const ArtworkForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addArtwork, updateArtwork } = useArtworks();
+  const { artTags: tagSuggestions } = useArtTags();
   const isEdit = Boolean(id);
 
   const [formData, setFormData] = useState({
@@ -293,23 +296,12 @@ const ArtworkForm = () => {
 
           <FormGroup>
             <Label>Tags</Label>
-            <TagInput>
-              {formData.tags.map((tag, index) => (
-                <Tag key={index}>
-                  {tag}
-                  <TagRemove type="button" onClick={() => handleRemoveTag(index)}>
-                    <FiX size={14} />
-                  </TagRemove>
-                </Tag>
-              ))}
-              <TagInputField
-                type="text"
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onKeyDown={handleAddTag}
-                placeholder="Type and press Enter"
-              />
-            </TagInput>
+            <TagInputWithSuggestions
+              value={formData.tags}
+              onChange={(tags) => setFormData(prev => ({ ...prev, tags }))}
+              suggestions={tagSuggestions}
+              placeholder="Type to search tags..."
+            />
           </FormGroup>
 
           <FormGroup>
