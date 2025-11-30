@@ -348,13 +348,6 @@ const Tag = styled.span`
   font-weight: 500;
 `;
 
-const ProcessSection = styled.div`
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 12px;
-  padding: 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-`;
-
 const CloseButton = styled.button`
   position: absolute;
   top: 1rem;
@@ -1050,17 +1043,7 @@ const ArtSimple = () => {
                 </Section>
               )}
 
-              <Section>
-                <SidebarSectionTitle>Process</SidebarSectionTitle>
-                <div style={{
-                  background: 'rgba(255, 255, 255, 0.02)',
-                  borderRadius: '12px',
-                  padding: '1.5rem',
-                  border: '1px solid rgba(255, 255, 255, 0.05)'
-                }}>
-                  <Description>{selectedArtwork.process}</Description>
-                </div>
-              </Section>
+
             </SidebarContent>
           </ModalSidebar>
 

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import styled from '@emotion/styled';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiUpload, FiTrash2, FiDownload, FiFile, FiExternalLink } from 'react-icons/fi';
-import { collection, getDocs, addDoc, deleteDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { db, storage } from '../../config/firebase';
 import AdminLayout from '../components/AdminLayout';
@@ -155,6 +155,17 @@ const ProgressText = styled.div`
   margin-bottom: 0.5rem;
 `;
 
+const ResumeBadge = styled.div`
+  display: inline-block;
+  background: ${props => props.theme.gradients.primary};
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+`;
+
 const InfoBox = styled.div`
   background: rgba(0, 212, 255, 0.1);
   border: 1px solid rgba(0, 212, 255, 0.3);
@@ -239,6 +250,7 @@ const AdminFiles = () => {
         downloadURL,
         size: file.size,
         type: file.type,
+        isResume: false,
         uploadedAt: new Date().toISOString()
       });
 
@@ -274,6 +286,24 @@ const AdminFiles = () => {
 
   const handleDownload = (file) => {
     window.open(file.downloadURL, '_blank');
+  };
+
+  const handleSetAsResume = async (file) => {
+    try {
+      // First, unset all other files as resume
+      const allFiles = await getDocs(collection(db, 'files'));
+      const updatePromises = allFiles.docs.map(docSnap => {
+        const docRef = doc(db, 'files', docSnap.id);
+        return updateDoc(docRef, { isResume: docSnap.id === file.id });
+      });
+      
+      await Promise.all(updatePromises);
+      
+      success('Resume Set', `${file.name} is now the resume file`);
+      fetchFiles();
+    } catch (err) {
+      error('Failed', err.message);
+    }
   };
 
   return (
@@ -333,6 +363,8 @@ const AdminFiles = () => {
                 <FiFile size={28} />
               </FileIcon>
               
+              {file.isResume && <ResumeBadge>📄 Resume</ResumeBadge>}
+              
               <FileName>{file.name}</FileName>
               
               <FileInfo>
@@ -342,9 +374,15 @@ const AdminFiles = () => {
               </FileInfo>
 
               <FileActions>
+                {!file.isResume && (
+                  <ActionButton onClick={() => handleSetAsResume(file)}>
+                    <FiFile size={16} />
+                    Set as Resume
+                  </ActionButton>
+                )}
                 <ActionButton onClick={() => handleDownload(file)}>
                   <FiDownload size={16} />
-                  Download
+                  {file.isResume ? 'Download' : 'View'}
                 </ActionButton>
                 <ActionButton variant="danger" onClick={() => handleDelete(file)}>
                   <FiTrash2 size={16} />

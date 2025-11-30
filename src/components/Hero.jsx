@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import styled from '@emotion/styled';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiGithub, FiLinkedin, FiDownload, FiArrowDown, FiCode, FiImage } from 'react-icons/fi';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '../config/firebase';
 
 const HeroContainer = styled.section`
   position: relative;
@@ -252,6 +254,28 @@ const Hero = () => {
   const [currentRole, setCurrentRole] = useState(0);
   const [displayText, setDisplayText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
+  const [resumeUrl, setResumeUrl] = useState('/resume.pdf'); // Default to local file
+
+  // Fetch resume URL from Firestore
+  useEffect(() => {
+    const fetchResumeUrl = async () => {
+      try {
+        const filesRef = collection(db, 'files');
+        const q = query(filesRef, where('isResume', '==', true));
+        const snapshot = await getDocs(q);
+        
+        if (!snapshot.empty) {
+          const resumeFile = snapshot.docs[0].data();
+          setResumeUrl(resumeFile.downloadURL);
+        }
+      } catch (error) {
+        // Silently fail and use default local file
+        console.error('Error fetching resume:', error);
+      }
+    };
+
+    fetchResumeUrl();
+  }, []);
 
   useEffect(() => {
     const typeSpeed = isDeleting ? 50 : 100;
@@ -340,7 +364,7 @@ const Hero = () => {
           </PrimaryButton>
 
           <SecondaryButton
-            href="/resume.pdf"
+            href={resumeUrl}
             target="_blank"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
