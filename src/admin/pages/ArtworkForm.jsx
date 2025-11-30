@@ -195,7 +195,8 @@ const ArtworkForm = () => {
     images: [],    // NEW: Multiple images support
     category: 'General',  // NEW: Artwork category
     tags: [],
-    featured: false
+    featured: false,
+    order: 0  // NEW: Display order
   });
 
   const [tagInput, setTagInput] = useState('');
@@ -223,7 +224,8 @@ const ArtworkForm = () => {
           images: images,
           category: data.category || 'General',
           tags: data.tags || [],
-          featured: data.featured || false
+          featured: data.featured || false,
+          order: data.order ?? 0
         });
       } else {
         alert('Artwork not found');
@@ -351,6 +353,21 @@ const ArtworkForm = () => {
               <option value="Fan Art">Fan Art</option>
               <option value="Studies">Studies</option>
             </Select>
+          </FormGroup>
+
+          <FormGroup>
+            <Label>Display Order</Label>
+            <Input
+              type="number"
+              name="order"
+              value={formData.order}
+              onChange={handleChange}
+              placeholder="0"
+              min="0"
+            />
+            <small style={{ color: '#888', marginTop: '0.5rem' }}>
+              Lower numbers appear first. Featured items always show first.
+            </small>
           </FormGroup>
 
           <FormGroup>

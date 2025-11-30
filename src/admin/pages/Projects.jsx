@@ -297,10 +297,16 @@ const Projects = () => {
         <ProjectsGrid>
           {projects
             .sort((a, b) => {
-              // Featured projects first
+              // Featured first
               if (a.featured && !b.featured) return -1;
               if (!a.featured && b.featured) return 1;
-              // Then by creation date (newest first)
+              
+              // Then by order
+              const orderA = a.order ?? 999999;
+              const orderB = b.order ?? 999999;
+              if (orderA !== orderB) return orderA - orderB;
+              
+              // Finally by date
               const dateA = a.createdAt?.toDate?.() || new Date(0);
               const dateB = b.createdAt?.toDate?.() || new Date(0);
               return dateB - dateA;

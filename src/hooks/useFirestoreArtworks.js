@@ -14,10 +14,8 @@ export const useFirestoreArtworks = () => {
     const fetchArtworks = async () => {
       try {
         setLoading(true);
-        const artworksQuery = query(
-          collection(db, 'artworks'),
-          orderBy('createdAt', 'desc')
-        );
+        // Fetch all artworks without ordering (we'll sort client-side)
+        const artworksQuery = query(collection(db, 'artworks'));
         
         const snapshot = await getDocs(artworksQuery);
         const artworksData = snapshot.docs.map(doc => ({
@@ -25,7 +23,24 @@ export const useFirestoreArtworks = () => {
           ...doc.data()
         }));
         
-        setArtworks(artworksData);
+        // Sort: Featured first, then by order field, then by createdAt
+        const sortedArtworks = artworksData.sort((a, b) => {
+          // Featured items first
+          if (a.featured && !b.featured) return -1;
+          if (!a.featured && b.featured) return 1;
+          
+          // Then by order field (lower numbers first)
+          const orderA = a.order ?? 999999;
+          const orderB = b.order ?? 999999;
+          if (orderA !== orderB) return orderA - orderB;
+          
+          // Finally by createdAt (newest first)
+          const dateA = a.createdAt?.toDate?.() || new Date(0);
+          const dateB = b.createdAt?.toDate?.() || new Date(0);
+          return dateB - dateA;
+        });
+        
+        setArtworks(sortedArtworks);
         setError(null);
       } catch (err) {
         console.error('Error fetching artworks:', err);

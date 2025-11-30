@@ -14,10 +14,8 @@ export const useFirestoreProjects = () => {
     const fetchProjects = async () => {
       try {
         setLoading(true);
-        const projectsQuery = query(
-          collection(db, 'projects'),
-          orderBy('createdAt', 'desc')
-        );
+        // Fetch all projects without ordering (we'll sort client-side)
+        const projectsQuery = query(collection(db, 'projects'));
         
         const snapshot = await getDocs(projectsQuery);
         const projectsData = snapshot.docs.map(doc => ({
@@ -25,7 +23,24 @@ export const useFirestoreProjects = () => {
           ...doc.data()
         }));
         
-        setProjects(projectsData);
+        // Sort: Featured first, then by order field, then by createdAt
+        const sortedProjects = projectsData.sort((a, b) => {
+          // Featured items first
+          if (a.featured && !b.featured) return -1;
+          if (!a.featured && b.featured) return 1;
+          
+          // Then by order field (lower numbers first)
+          const orderA = a.order ?? 999999;
+          const orderB = b.order ?? 999999;
+          if (orderA !== orderB) return orderA - orderB;
+          
+          // Finally by createdAt (newest first)
+          const dateA = a.createdAt?.toDate?.() || new Date(0);
+          const dateB = b.createdAt?.toDate?.() || new Date(0);
+          return dateB - dateA;
+        });
+        
+        setProjects(sortedProjects);
         setError(null);
       } catch (err) {
         console.error('Error fetching projects:', err);

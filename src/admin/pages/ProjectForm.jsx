@@ -198,7 +198,8 @@ const ProjectForm = () => {
     features: [],
     liveUrl: '',
     githubUrl: '',
-    featured: false
+    featured: false,
+    order: 0  // NEW: Display order
   });
 
   const [techInput, setTechInput] = useState('');
@@ -226,6 +227,7 @@ const ProjectForm = () => {
           category: data.category || 'Web',
           imageUrl: data.imageUrl || '',
           images: images,
+          order: data.order ?? 0,
           technologies: data.technologies || [],
           features: data.features || [],
           liveUrl: data.liveUrl || '',
@@ -368,6 +370,21 @@ const ProjectForm = () => {
               <option value="AI">AI/ML</option>
               <option value="Desktop">Desktop</option>
             </Select>
+          </FormGroup>
+
+          <FormGroup>
+            <Label>Display Order</Label>
+            <Input
+              type="number"
+              name="order"
+              value={formData.order}
+              onChange={handleChange}
+              placeholder="0"
+              min="0"
+            />
+            <small style={{ color: '#888', marginTop: '0.5rem' }}>
+              Lower numbers appear first. Featured items always show first.
+            </small>
           </FormGroup>
 
           <FormGroup>
