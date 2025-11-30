@@ -58,6 +58,7 @@ const ProjectCard = styled(motion.div)`
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
+    gap: 0;
   }
 `;
 
@@ -77,6 +78,10 @@ const ProjectInfo = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+
+  @media (max-width: 768px) {
+    padding: 1rem 1.5rem;
+  }
 `;
 
 const ProjectTitle = styled.h3`
@@ -132,7 +137,7 @@ const Actions = styled.div`
 
   @media (max-width: 768px) {
     flex-direction: row;
-    padding: 1rem;
+    padding: 1rem 1.5rem;
   }
 `;
 

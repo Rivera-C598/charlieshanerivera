@@ -11,6 +11,7 @@ import { useToast } from '../hooks/useToast';
 import { migrateProjects, migrateArtworks } from '../utils/migrateData';
 import { migrateExistingTags } from '../utils/tagManager';
 import { useAllLikes } from '../../hooks/usePortfolioLikes';
+import { useAuth } from '../../contexts/AuthContext';
 
 const DashboardGrid = styled.div`
   display: grid;
@@ -127,7 +128,8 @@ const WelcomeTitle = styled.h2`
 
 const WelcomeText = styled.p`
   font-size: 1rem;
-  opacity: 0.9;
+  opacity: 1;
+  color: rgba(255, 255, 255, 0.95);
 `;
 
 const ConfirmModal = styled(motion.div)`
@@ -218,6 +220,13 @@ const Dashboard = () => {
   const [showConfirm, setShowConfirm] = useState(false);
   const { toasts, removeToast, success, error } = useToast();
   const { stats: likeStats } = useAllLikes();
+  const { user } = useAuth();
+
+  const getUserDisplayName = () => {
+    if (user?.displayName) return user.displayName;
+    if (user?.email) return user.email.split('@')[0];
+    return 'Admin';
+  };
 
   const handleMigrate = async () => {
     setShowConfirm(false);
@@ -361,7 +370,7 @@ const Dashboard = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <WelcomeTitle>Welcome back! 👋</WelcomeTitle>
+        <WelcomeTitle>Welcome, {getUserDisplayName()}</WelcomeTitle>
         <WelcomeText>
           Manage your portfolio content from this dashboard
         </WelcomeText>
