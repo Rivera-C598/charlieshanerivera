@@ -48,19 +48,20 @@ export const usePortfolioLikes = () => {
     let browser = 'Unknown';
     let os = 'Unknown';
 
-    // Detect browser
-    if (ua.includes('Firefox')) browser = 'Firefox';
-    else if (ua.includes('Chrome')) browser = 'Chrome';
-    else if (ua.includes('Safari')) browser = 'Safari';
-    else if (ua.includes('Edge')) browser = 'Edge';
-    else if (ua.includes('Opera')) browser = 'Opera';
+    // Detect browser (order matters - check specific browsers before generic ones)
+    if (ua.includes('Edg')) browser = 'Edge'; // Edge uses "Edg" in modern versions
+    else if (ua.includes('OPR') || ua.includes('Opera')) browser = 'Opera';
+    else if (ua.includes('Firefox')) browser = 'Firefox';
+    else if (ua.includes('Chrome')) browser = 'Chrome'; // Check Chrome after Edge/Opera
+    else if (ua.includes('Safari')) browser = 'Safari'; // Check Safari last (Chrome includes Safari)
 
-    // Detect OS
-    if (ua.includes('Windows')) os = 'Windows';
+    // Detect OS (check mobile first, then desktop)
+    if (ua.includes('Android')) os = 'Android';
+    else if (ua.includes('iPhone') || ua.includes('iPad') || ua.includes('iPod')) os = 'iOS';
+    else if (ua.includes('Win')) os = 'Windows';
     else if (ua.includes('Mac')) os = 'macOS';
     else if (ua.includes('Linux')) os = 'Linux';
-    else if (ua.includes('Android')) os = 'Android';
-    else if (ua.includes('iOS')) os = 'iOS';
+    else if (ua.includes('CrOS')) os = 'Chrome OS';
 
     return { ...info, browser, os };
   };
