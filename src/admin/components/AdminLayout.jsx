@@ -99,10 +99,14 @@ const MainContent = styled.main`
   flex: 1;
   margin-left: 250px;
   padding: 2rem;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
 
   @media (max-width: 768px) {
     margin-left: 0;
     padding: 1rem;
+    width: 100%;
   }
 `;
 

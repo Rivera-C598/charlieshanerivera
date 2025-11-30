@@ -119,8 +119,8 @@ const ActionButtonBase = styled.button`
   }
 `;
 
-const ActionButton = motion(ActionButtonBase);
-const ActionLink = motion(styled(Link)`
+const ActionButton = motion.create(ActionButtonBase);
+const ActionLink = motion.create(styled(Link)`
   background: rgba(0, 212, 255, 0.1);
   color: ${props => props.theme.colors.primary};
   border: 1px solid rgba(0, 212, 255, 0.3);

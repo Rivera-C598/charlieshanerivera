@@ -9,6 +9,13 @@ const Grid = styled.div`
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2rem;
+  width: 100%;
+  max-width: 100%;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
 `;
 
 const StatCard = styled(motion.div)`
@@ -20,6 +27,15 @@ const StatCard = styled(motion.div)`
   display: flex;
   align-items: center;
   gap: 1rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+    gap: 0.75rem;
+  }
 `;
 
 const IconWrapper = styled.div`
@@ -31,10 +47,18 @@ const IconWrapper = styled.div`
   align-items: center;
   justify-content: center;
   color: white;
+  flex-shrink: 0;
+
+  @media (max-width: 768px) {
+    width: 50px;
+    height: 50px;
+  }
 `;
 
 const StatContent = styled.div`
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
 `;
 
 const StatValue = styled.div`
@@ -43,11 +67,24 @@ const StatValue = styled.div`
   color: ${props => props.theme.colors.text};
   line-height: 1;
   margin-bottom: 0.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+  }
 `;
 
 const StatLabel = styled.div`
   font-size: 0.9rem;
   color: ${props => props.theme.colors.lightText};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  @media (max-width: 768px) {
+    font-size: 0.8rem;
+  }
 `;
 
 const Section = styled.div`
@@ -57,6 +94,12 @@ const Section = styled.div`
   padding: 2rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
   margin-bottom: 2rem;
+  overflow: hidden;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
 `;
 
 const SectionTitle = styled.h2`
@@ -66,42 +109,75 @@ const SectionTitle = styled.h2`
   display: flex;
   align-items: center;
   gap: 0.5rem;
+
+  @media (max-width: 768px) {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+  }
 `;
 
 const ChartGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 2rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
 `;
 
 const ChartCard = styled.div`
   background: rgba(255, 255, 255, 0.03);
   border-radius: 12px;
   padding: 1.5rem;
+  overflow: hidden;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
 `;
 
 const ChartTitle = styled.h3`
   color: ${props => props.theme.colors.text};
   font-size: 1.1rem;
   margin-bottom: 1rem;
+
+  @media (max-width: 768px) {
+    font-size: 1rem;
+  }
 `;
 
 const BarChart = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  overflow: hidden;
 `;
 
 const BarRow = styled.div`
   display: flex;
   align-items: center;
   gap: 1rem;
+  min-width: 0;
+
+  @media (max-width: 768px) {
+    gap: 0.5rem;
+  }
 `;
 
 const BarLabel = styled.div`
   min-width: 100px;
   color: ${props => props.theme.colors.lightText};
   font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  @media (max-width: 768px) {
+    min-width: 70px;
+    font-size: 0.8rem;
+  }
 `;
 
 const BarContainer = styled.div`
@@ -111,6 +187,10 @@ const BarContainer = styled.div`
   border-radius: 6px;
   overflow: hidden;
   position: relative;
+
+  @media (max-width: 768px) {
+    height: 25px;
+  }
 `;
 
 const BarFill = styled(motion.div)`
@@ -124,15 +204,31 @@ const BarFill = styled(motion.div)`
   color: white;
   font-size: 0.85rem;
   font-weight: 600;
+
+  @media (max-width: 768px) {
+    font-size: 0.75rem;
+    padding-right: 0.3rem;
+  }
 `;
 
 const LikesTable = styled.div`
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  
+  @media (max-width: 768px) {
+    margin: -1rem;
+    padding: 1rem;
+  }
 `;
 
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
+  min-width: 600px;
+
+  @media (max-width: 768px) {
+    font-size: 0.85rem;
+  }
 `;
 
 const Th = styled.th`
@@ -142,6 +238,12 @@ const Th = styled.th`
   font-weight: 600;
   font-size: 0.9rem;
   border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  white-space: nowrap;
+
+  @media (max-width: 768px) {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.8rem;
+  }
 `;
 
 const Td = styled.td`
@@ -149,6 +251,12 @@ const Td = styled.td`
   color: ${props => props.theme.colors.text};
   font-size: 0.9rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  white-space: nowrap;
+
+  @media (max-width: 768px) {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.8rem;
+  }
 `;
 
 const EmptyState = styled.div`
