@@ -6,7 +6,7 @@ import { FiSave, FiX } from 'react-icons/fi';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import AdminLayout from '../components/AdminLayout';
-import ImageUpload from '../components/ImageUpload';
+import MultiImageUpload from '../components/MultiImageUpload';
 import TagInputWithSuggestions from '../components/TagInputWithSuggestions';
 import { ToastProvider } from '../components/Toast';
 import { useToast } from '../hooks/useToast';
@@ -188,13 +188,12 @@ const ProjectForm = () => {
   const { features: featureSuggestions } = useFeatures();
   const isEdit = Boolean(id);
 
-  console.log('ProjectForm rendered:', { id, isEdit });
-
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     category: 'Web',
-    imageUrl: '',
+    imageUrl: '',  // Keep for backward compatibility
+    images: [],    // NEW: Multiple images support
     technologies: [],
     features: [],
     liveUrl: '',
@@ -208,21 +207,25 @@ const ProjectForm = () => {
   const [loadingData, setLoadingData] = useState(isEdit);
 
   const loadProject = async () => {
-    console.log('Loading project with ID:', id);
     try {
       const docRef = doc(db, 'projects', id);
       const docSnap = await getDoc(docRef);
       
-      console.log('Document exists:', docSnap.exists());
-      
       if (docSnap.exists()) {
         const data = docSnap.data();
-        console.log('Loaded project data:', data);
+        // Handle backward compatibility: convert old imageUrl to images array
+        const images = data.images && data.images.length > 0
+          ? data.images
+          : data.imageUrl
+            ? [{ url: data.imageUrl, storagePath: '', caption: '' }]
+            : [];
+
         setFormData({
           title: data.title || '',
           description: data.description || '',
           category: data.category || 'Web',
           imageUrl: data.imageUrl || '',
+          images: images,
           technologies: data.technologies || [],
           features: data.features || [],
           liveUrl: data.liveUrl || '',
@@ -297,9 +300,17 @@ const ProjectForm = () => {
     e.preventDefault();
     setLoading(true);
 
+    // Prepare data with thumbnail and backward compatibility
+    const projectData = {
+      ...formData,
+      thumbnail: formData.images[0]?.url || '',
+      imageUrl: formData.images[0]?.url || '',  // Backward compatibility
+      images: formData.images
+    };
+
     const result = isEdit 
-      ? await updateProject(id, formData)
-      : await addProject(formData);
+      ? await updateProject(id, projectData)
+      : await addProject(projectData);
 
     if (result.success) {
       success(
@@ -359,12 +370,15 @@ const ProjectForm = () => {
             </Select>
           </FormGroup>
 
-          <ImageUpload
-            label="Project Image"
-            value={formData.imageUrl}
-            onChange={(url) => setFormData(prev => ({ ...prev, imageUrl: url }))}
-            folder="projects"
-          />
+          <FormGroup>
+            <Label>Project Images</Label>
+            <MultiImageUpload
+              images={formData.images}
+              onChange={(images) => setFormData(prev => ({ ...prev, images }))}
+              maxImages={10}
+              folder="projects"
+            />
+          </FormGroup>
 
           <FormGroup>
             <Label>Technologies</Label>

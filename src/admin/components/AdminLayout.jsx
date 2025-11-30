@@ -11,7 +11,9 @@ import {
   FiLogOut,
   FiMenu,
   FiX,
-  FiBarChart2
+  FiBarChart2,
+  FiCode,
+  FiFile
 } from 'react-icons/fi';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -158,6 +160,8 @@ const navItems = [
   { path: '/admin', label: 'Dashboard', icon: FiHome },
   { path: '/admin/projects', label: 'Projects', icon: FiFolder },
   { path: '/admin/art', label: 'Artworks', icon: FiImage },
+  { path: '/admin/skills', label: 'Skills', icon: FiCode },
+  { path: '/admin/files', label: 'Files', icon: FiFile },
   { path: '/admin/tags', label: 'Tags', icon: FiTag },
   { path: '/admin/analytics', label: 'Analytics', icon: FiBarChart2 },
 ];

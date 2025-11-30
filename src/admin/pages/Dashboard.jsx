@@ -8,7 +8,7 @@ import { db } from '../../config/firebase';
 import AdminLayout from '../components/AdminLayout';
 import { ToastProvider } from '../components/Toast';
 import { useToast } from '../hooks/useToast';
-import { migrateProjects, migrateArtworks } from '../utils/migrateData';
+import { migrateProjects, migrateArtworks, migrateSkills, addCategoriesToArtworks } from '../utils/migrateData';
 import { migrateExistingTags } from '../utils/tagManager';
 import { useAllLikes } from '../../hooks/usePortfolioLikes';
 import { useAuth } from '../../contexts/AuthContext';
@@ -213,7 +213,8 @@ const Dashboard = () => {
     projects: 0,
     artworks: 0,
     featured: 0,
-    tags: 0
+    tags: 0,
+    skills: 0
   });
   const [loading, setLoading] = useState(true);
   const [migrating, setMigrating] = useState(false);
@@ -283,6 +284,44 @@ const Dashboard = () => {
     setMigrating(false);
   };
 
+  const handleMigrateSkills = async () => {
+    const shouldForce = stats.skills > 0;
+    
+    if (shouldForce) {
+      if (!window.confirm(`You have ${stats.skills} skills. This will DELETE them and re-migrate all skills. Continue?`)) {
+        return;
+      }
+    }
+    
+    setMigrating(true);
+    const result = await migrateSkills(shouldForce);
+    
+    if (result.success) {
+      success('Migration Complete', `Successfully migrated ${result.count} skills!`);
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+    } else {
+      error('Migration Failed', result.error);
+      setMigrating(false);
+    }
+  };
+
+  const handleAddCategories = async () => {
+    setMigrating(true);
+    const result = await addCategoriesToArtworks();
+    
+    if (result.success) {
+      success('Categories Added', `Added categories to ${result.count} artworks!`);
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+    } else {
+      error('Migration Failed', result.error);
+      setMigrating(false);
+    }
+  };
+
   useEffect(() => {
     const fetchStats = async () => {
       try {
@@ -314,11 +353,16 @@ const Dashboard = () => {
         const artTagsSnapshot = await getDocs(collection(db, 'artTags'));
         const totalTags = techSnapshot.size + featuresSnapshot.size + artTagsSnapshot.size;
 
+        // Count skills
+        const skillsSnapshot = await getDocs(collection(db, 'skills'));
+        const skillsCount = skillsSnapshot.size;
+
         setStats({
           projects: projectsCount,
           artworks: artworksCount,
           featured: featuredCount,
-          tags: totalTags
+          tags: totalTags,
+          skills: skillsCount
         });
       } catch (error) {
         console.error('Error fetching stats:', error);
@@ -466,7 +510,7 @@ const Dashboard = () => {
         </ActionsGrid>
       </QuickActions>
 
-      {!loading && (stats.projects === 0 || stats.artworks < 12) && (
+      {!loading && (stats.projects === 0 || stats.artworks < 12 || stats.skills === 0) && (
         <QuickActions>
           <SectionTitle>Data Migration</SectionTitle>
           <ActionsGrid>
@@ -497,6 +541,36 @@ const Dashboard = () => {
                 </ActionLabel>
               </ActionButton>
             )}
+
+            {stats.skills === 0 && (
+              <ActionButton 
+                as="button"
+                onClick={handleMigrateSkills}
+                disabled={migrating}
+              >
+                <ActionIcon>
+                  <FiDatabase size={20} />
+                </ActionIcon>
+                <ActionLabel>
+                  {migrating ? 'Migrating...' : 'Migrate Skills (12)'}
+                </ActionLabel>
+              </ActionButton>
+            )}
+
+            {stats.artworks > 0 && (
+              <ActionButton 
+                as="button"
+                onClick={handleAddCategories}
+                disabled={migrating}
+              >
+                <ActionIcon>
+                  <FiDatabase size={20} />
+                </ActionIcon>
+                <ActionLabel>
+                  {migrating ? 'Adding...' : 'Add Categories to Artworks'}
+                </ActionLabel>
+              </ActionButton>
+            )}
           </ActionsGrid>
         </QuickActions>
       )}
@@ -515,6 +589,43 @@ const Dashboard = () => {
               </ActionIcon>
               <ActionLabel>{migrating ? 'Collecting...' : 'Collect Existing Tags'}</ActionLabel>
             </ActionButton>
+          </ActionsGrid>
+        </QuickActions>
+      )}
+
+      {!loading && (stats.skills > 0 || stats.artworks > 0) && (
+        <QuickActions>
+          <SectionTitle>Advanced Tools</SectionTitle>
+          <ActionsGrid>
+            {stats.skills > 0 && (
+              <ActionButton 
+                as="button"
+                onClick={handleMigrateSkills}
+                disabled={migrating}
+              >
+                <ActionIcon>
+                  <FiDatabase size={20} />
+                </ActionIcon>
+                <ActionLabel>
+                  {migrating ? 'Re-syncing...' : `Re-sync Skills (${stats.skills})`}
+                </ActionLabel>
+              </ActionButton>
+            )}
+
+            {stats.artworks > 0 && (
+              <ActionButton 
+                as="button"
+                onClick={handleAddCategories}
+                disabled={migrating}
+              >
+                <ActionIcon>
+                  <FiDatabase size={20} />
+                </ActionIcon>
+                <ActionLabel>
+                  {migrating ? 'Adding...' : 'Add Categories to Artworks'}
+                </ActionLabel>
+              </ActionButton>
+            )}
           </ActionsGrid>
         </QuickActions>
       )}

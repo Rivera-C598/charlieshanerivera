@@ -1,6 +1,10 @@
-import { collection, addDoc, getDocs, deleteDoc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, deleteDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import { projectsData } from '../../data/projects';
+import { 
+  FiCode, FiZap, FiLayers, FiServer, FiDatabase, FiCloud, 
+  FiImage, FiMonitor, FiTool, FiSmartphone 
+} from 'react-icons/fi';
 
 // Hardcoded artwork data to migrate
 const artworksData = [
@@ -185,6 +189,213 @@ export const migrateArtworks = async (force = false) => {
     };
   } catch (error) {
     console.error('Migration error:', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};
+
+
+// Hardcoded skills data to migrate
+const skillsData = {
+  frontend: [
+    {
+      name: 'React & Next.js',
+      level: 'Expert',
+      progress: 95,
+      icon: 'FiCode',
+      description: 'Building modern, scalable web applications with React ecosystem and server-side rendering.',
+      tags: ['React', 'Next.js', 'TypeScript', 'Redux', 'Context API']
+    },
+    {
+      name: 'JavaScript & TypeScript',
+      level: 'Expert',
+      progress: 90,
+      icon: 'FiZap',
+      description: 'Advanced JavaScript programming with TypeScript for type-safe, maintainable code.',
+      tags: ['ES6+', 'TypeScript', 'Async/Await', 'Modules', 'Testing']
+    },
+    {
+      name: 'CSS & Styling',
+      level: 'Advanced',
+      progress: 85,
+      icon: 'FiLayers',
+      description: 'Modern CSS techniques, animations, and responsive design with various frameworks.',
+      tags: ['CSS3', 'Sass', 'Styled Components', 'Tailwind', 'Framer Motion']
+    }
+  ],
+  backend: [
+    {
+      name: 'Node.js & Express',
+      level: 'Advanced',
+      progress: 85,
+      icon: 'FiServer',
+      description: 'Building robust APIs and server-side applications with Node.js ecosystem.',
+      tags: ['Express', 'Fastify', 'REST APIs', 'GraphQL', 'Middleware']
+    },
+    {
+      name: 'Databases',
+      level: 'Advanced',
+      progress: 80,
+      icon: 'FiDatabase',
+      description: 'Working with both SQL and NoSQL databases for optimal data management.',
+      tags: ['MongoDB', 'PostgreSQL', 'Redis', 'Prisma', 'Mongoose']
+    },
+    {
+      name: 'Cloud & DevOps',
+      level: 'Intermediate',
+      progress: 75,
+      icon: 'FiCloud',
+      description: 'Deploying and managing applications on cloud platforms with modern DevOps practices.',
+      tags: ['AWS', 'Docker', 'CI/CD', 'Vercel', 'GitHub Actions']
+    }
+  ],
+  creative: [
+    {
+      name: 'Digital Art & Design',
+      level: 'Advanced',
+      progress: 90,
+      icon: 'FiImage',
+      description: 'Creating stunning digital artwork, illustrations, and visual designs.',
+      tags: ['Photoshop', 'Procreate', 'Illustrator', 'Digital Painting', 'Concept Art']
+    },
+    {
+      name: '3D Modeling & Animation',
+      level: 'Intermediate',
+      progress: 70,
+      icon: 'FiMonitor',
+      description: 'Building 3D models, scenes, and animations for various creative projects.',
+      tags: ['Blender', 'Cinema 4D', '3D Modeling', 'Animation', 'Rendering']
+    },
+    {
+      name: 'UI/UX Design',
+      level: 'Advanced',
+      progress: 85,
+      icon: 'FiTool',
+      description: 'Designing intuitive user interfaces and experiences with modern design principles.',
+      tags: ['Figma', 'Prototyping', 'User Research', 'Wireframing', 'Design Systems']
+    }
+  ],
+  mobile: [
+    {
+      name: 'React Native',
+      level: 'Intermediate',
+      progress: 75,
+      icon: 'FiSmartphone',
+      description: 'Cross-platform mobile development with React Native and Expo.',
+      tags: ['React Native', 'Expo', 'Navigation', 'Native Modules', 'App Store']
+    },
+    {
+      name: 'Mobile UI/UX',
+      level: 'Advanced',
+      progress: 80,
+      icon: 'FiLayers',
+      description: 'Designing mobile-first interfaces with platform-specific guidelines.',
+      tags: ['iOS Design', 'Material Design', 'Mobile Patterns', 'Responsive', 'Accessibility']
+    }
+  ]
+};
+
+/**
+ * Migrate skills to Firestore
+ */
+export const migrateSkills = async (force = false) => {
+  try {
+    const skillsCollection = collection(db, 'skills');
+    const skillsSnapshot = await getDocs(skillsCollection);
+    
+    // If force is true, delete existing skills first
+    if (force && skillsSnapshot.size > 0) {
+      const deletePromises = skillsSnapshot.docs.map(doc => 
+        deleteDoc(doc.ref)
+      );
+      await Promise.all(deletePromises);
+    } else if (skillsSnapshot.size > 0) {
+      return {
+        success: false,
+        error: 'Skills already exist in Firestore. Use force=true to re-migrate.'
+      };
+    }
+
+    let count = 0;
+
+    // Migrate each skill from all categories
+    for (const [category, skills] of Object.entries(skillsData)) {
+      for (const skill of skills) {
+        const skillData = {
+          name: skill.name,
+          category: category,
+          level: skill.level,
+          progress: skill.progress,
+          icon: skill.icon,
+          description: skill.description,
+          tags: skill.tags || [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+
+        await addDoc(skillsCollection, skillData);
+        count++;
+      }
+    }
+
+    return {
+      success: true,
+      count
+    };
+  } catch (error) {
+    console.error('Skills migration error:', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};
+
+
+/**
+ * Add categories to existing artworks
+ */
+export const addCategoriesToArtworks = async () => {
+  try {
+    const artworksSnapshot = await getDocs(collection(db, 'artworks'));
+    let updatedCount = 0;
+
+    for (const docSnap of artworksSnapshot.docs) {
+      const data = docSnap.data();
+      
+      // Skip if already has category
+      if (data.category) continue;
+
+      // Auto-categorize based on tags or set to General
+      let category = 'General';
+      const tags = data.tags || [];
+      
+      if (tags.some(tag => tag.toLowerCase().includes('character'))) {
+        category = 'Character Design';
+      } else if (tags.some(tag => tag.toLowerCase().includes('environment'))) {
+        category = 'Environment Art';
+      } else if (tags.some(tag => tag.toLowerCase().includes('logo') || tag.toLowerCase().includes('branding'))) {
+        category = 'Logos & Branding';
+      } else if (tags.some(tag => tag.toLowerCase().includes('concept'))) {
+        category = 'Concept Art';
+      } else if (tags.some(tag => tag.toLowerCase().includes('fan'))) {
+        category = 'Fan Art';
+      } else if (tags.some(tag => tag.toLowerCase().includes('stud'))) {
+        category = 'Studies';
+      }
+
+      await updateDoc(docSnap.ref, { category });
+      updatedCount++;
+    }
+
+    return {
+      success: true,
+      count: updatedCount
+    };
+  } catch (error) {
+    console.error('Category migration error:', error);
     return {
       success: false,
       error: error.message

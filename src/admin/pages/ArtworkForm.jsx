@@ -6,7 +6,7 @@ import { FiSave, FiX } from 'react-icons/fi';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import AdminLayout from '../components/AdminLayout';
-import ImageUpload from '../components/ImageUpload';
+import MultiImageUpload from '../components/MultiImageUpload';
 import TagInputWithSuggestions from '../components/TagInputWithSuggestions';
 import { ToastProvider } from '../components/Toast';
 import { useToast } from '../hooks/useToast';
@@ -66,6 +66,28 @@ const TextArea = styled.textarea`
     outline: none;
     border-color: ${props => props.theme.colors.primary};
     box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.2);
+  }
+`;
+
+const Select = styled.select`
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: ${props => props.theme.colors.text};
+  padding: 0.875rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:focus {
+    outline: none;
+    border-color: ${props => props.theme.colors.primary};
+    box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.2);
+  }
+
+  option {
+    background: #1a1a2e;
+    color: white;
   }
 `;
 
@@ -169,7 +191,9 @@ const ArtworkForm = () => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    imageUrl: '',
+    imageUrl: '',  // Keep for backward compatibility
+    images: [],    // NEW: Multiple images support
+    category: 'General',  // NEW: Artwork category
     tags: [],
     featured: false
   });
@@ -185,10 +209,19 @@ const ArtworkForm = () => {
       
       if (docSnap.exists()) {
         const data = docSnap.data();
+        // Handle backward compatibility: convert old imageUrl to images array
+        const images = data.images && data.images.length > 0
+          ? data.images
+          : data.imageUrl
+            ? [{ url: data.imageUrl, storagePath: '', caption: '' }]
+            : [];
+
         setFormData({
           title: data.title || '',
           description: data.description || '',
           imageUrl: data.imageUrl || '',
+          images: images,
+          category: data.category || 'General',
           tags: data.tags || [],
           featured: data.featured || false
         });
@@ -241,9 +274,18 @@ const ArtworkForm = () => {
     e.preventDefault();
     setLoading(true);
 
+    // Prepare data with thumbnail and backward compatibility
+    const artworkData = {
+      ...formData,
+      thumbnail: formData.images[0]?.url || '',
+      imageUrl: formData.images[0]?.url || '',  // Backward compatibility
+      images: formData.images,
+      category: formData.category
+    };
+
     const result = isEdit 
-      ? await updateArtwork(id, formData)
-      : await addArtwork(formData);
+      ? await updateArtwork(id, artworkData)
+      : await addArtwork(artworkData);
 
     if (result.success) {
       success(
@@ -294,12 +336,32 @@ const ArtworkForm = () => {
             />
           </FormGroup>
 
-          <ImageUpload
-            label="Artwork Image *"
-            value={formData.imageUrl}
-            onChange={(url) => setFormData(prev => ({ ...prev, imageUrl: url }))}
-            folder="art"
-          />
+          <FormGroup>
+            <Label>Category</Label>
+            <Select
+              name="category"
+              value={formData.category}
+              onChange={handleChange}
+            >
+              <option value="General">General Artwork</option>
+              <option value="Character Design">Character Design</option>
+              <option value="Environment Art">Environment Art</option>
+              <option value="Logos & Branding">Logos & Branding</option>
+              <option value="Concept Art">Concept Art</option>
+              <option value="Fan Art">Fan Art</option>
+              <option value="Studies">Studies</option>
+            </Select>
+          </FormGroup>
+
+          <FormGroup>
+            <Label>Artwork Images</Label>
+            <MultiImageUpload
+              images={formData.images}
+              onChange={(images) => setFormData(prev => ({ ...prev, images }))}
+              maxImages={10}
+              folder="art"
+            />
+          </FormGroup>
 
           <FormGroup>
             <Label>Tags</Label>

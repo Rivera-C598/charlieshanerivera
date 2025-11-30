@@ -6,6 +6,7 @@ import {
   FiMonitor, FiLayers, FiServer, FiZap
 } from 'react-icons/fi';
 import AnimatedBackground from './AnimatedBackground';
+import { useSkills } from '../hooks/useSkills';
 
 const SkillsContainer = styled.section`
   padding: 8rem 2rem;
@@ -250,8 +251,20 @@ const tabConfig = [
   { key: 'creative', label: 'Digital Art', icon: FiImage }
 ];
 
+// Icon mapping for Firestore data
+const iconMap = {
+  FiCode, FiZap, FiLayers, FiServer, FiDatabase, FiCloud,
+  FiImage, FiMonitor, FiTool, FiSmartphone
+};
+
 const Skills = () => {
   const [activeTab, setActiveTab] = useState('frontend');
+  const { skillsByCategory, loading } = useSkills();
+  
+  // Use Firestore data if available, otherwise fall back to hardcoded data
+  const displayData = Object.keys(skillsByCategory).length > 0 
+    ? skillsByCategory 
+    : skillsData;
 
   return (
     <SkillsContainer>
@@ -299,6 +312,11 @@ const Skills = () => {
           ))}
         </SkillsTabs>
 
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '4rem 2rem', color: '#888' }}>
+            Loading skills...
+          </div>
+        ) : (
         <AnimatePresence mode="wait">
           <SkillsGrid
             key={activeTab}
@@ -307,9 +325,15 @@ const Skills = () => {
             exit={{ opacity: 0, y: -30 }}
             transition={{ duration: 0.5 }}
           >
-            {skillsData[activeTab].map((skill, index) => (
+            {(displayData[activeTab] || []).map((skill, index) => {
+              // Handle both icon component (hardcoded) and icon string (Firestore)
+              const IconComponent = typeof skill.icon === 'string' 
+                ? iconMap[skill.icon] || FiCode
+                : skill.icon;
+              
+              return (
               <SkillCard
-                key={skill.name}
+                key={skill.id || skill.name}
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
@@ -317,7 +341,7 @@ const Skills = () => {
               >
                 <SkillHeader>
                   <SkillIcon>
-                    <skill.icon />
+                    <IconComponent />
                   </SkillIcon>
                   <SkillInfo>
                     <SkillName>{skill.name}</SkillName>
@@ -332,9 +356,11 @@ const Skills = () => {
                   ))}
                 </SkillTags>
               </SkillCard>
-            ))}
+            );
+            })}
           </SkillsGrid>
         </AnimatePresence>
+        )}
       </Container>
     </SkillsContainer>
   );

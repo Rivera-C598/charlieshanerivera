@@ -55,5 +55,17 @@ service cloud.firestore {
       allow delete: if true;  // Anyone can unlike (their own)
       allow update: if false;  // No updates allowed
     }
+    
+    // Skills collection
+    match /skills/{skillId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // Files collection (for downloadable files like resumes)
+    match /files/{fileId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
   }
 }

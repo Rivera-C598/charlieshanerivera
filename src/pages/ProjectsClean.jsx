@@ -349,7 +349,8 @@ const ProjectsClean = () => {
       <Modal
         isOpen={modal.isOpen}
         onClose={modal.closeModal}
-        imageUrl={project.imageUrl}
+        images={project.images}
+        imageUrl={project.imageUrl || project.thumbnail}
         imageAlt={project.title}
         onNext={modal.navigateNext}
         onPrev={modal.navigatePrev}
@@ -512,7 +513,10 @@ const ProjectsClean = () => {
                 transition={{ duration: 0.6, delay: 1.0 + index * 0.1 }}
                 whileHover={{ scale: 1.02 }}
               >
-                <ProjectImage src={project.imageUrl} alt={project.title} />
+                <ProjectImage 
+                  src={project.thumbnail || project.images?.[0]?.url || project.imageUrl} 
+                  alt={project.title} 
+                />
                 <ProjectContent>
                   <ProjectTitle>{project.title}</ProjectTitle>
                   <ProjectCategory>{project.category}</ProjectCategory>

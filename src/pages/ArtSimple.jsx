@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { FiArrowRight } from 'react-icons/fi';
 import AnimatedBackground from '../components/AnimatedBackground';
+import PhotoSwipeGallery from '../components/PhotoSwipeGallery';
 import { useFirestoreArtworks } from '../hooks/useFirestoreArtworks';
 
 const ArtContainer = styled.section`
@@ -34,8 +35,41 @@ const SectionTitle = styled(motion.h2)`
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  margin-bottom: 4rem;
+  margin-bottom: 2rem;
   font-weight: 700;
+`;
+
+const FilterContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-bottom: 3rem;
+`;
+
+const CategoryFilter = styled.select`
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: ${props => props.theme.colors.text};
+  padding: 0.875rem 1.5rem;
+  border-radius: 25px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 200px;
+
+  &:focus {
+    outline: none;
+    border-color: ${props => props.theme.colors.primary};
+    box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.2);
+  }
+
+  &:hover {
+    border-color: ${props => props.theme.colors.primary};
+  }
+
+  option {
+    background: #1a1a2e;
+    color: white;
+  }
 `;
 
 const ArtGrid = styled(motion.div)`
@@ -130,12 +164,19 @@ const Modal = styled.div`
   background: rgba(0, 0, 0, 0.95);
   z-index: 1000;
   display: flex;
-  overflow: auto;
+  overflow: hidden;
+
+  @media (max-width: 768px) {
+    display: flex;
+    overflow: hidden;
+    flex-direction: column;
+  }
 `;
 
 const ModalImageSection = styled.div`
   flex: 1;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   padding: 2rem;
   display: flex;
   flex-direction: column;
@@ -144,6 +185,16 @@ const ModalImageSection = styled.div`
   gap: 2rem;
   position: relative;
   min-height: 100vh;
+  max-width: 100%;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+    overflow-x: hidden;
+    overflow-y: auto;
+    width: 100%;
+    height: 100vh;
+    flex: none;
+  }
 `;
 
 const ModalImageContainer = styled.div`
@@ -654,6 +705,7 @@ const ArtSimple = () => {
   const [selectedArtwork, setSelectedArtwork] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [imageTransform, setImageTransform] = useState({
     scale: 1,
     translateX: 0,
@@ -802,6 +854,23 @@ const ArtSimple = () => {
         >
           Art Gallery
         </SectionTitle>
+
+        <FilterContainer>
+          <CategoryFilter
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+          >
+            <option value="all">All Categories</option>
+            <option value="General">General Artwork</option>
+            <option value="Character Design">Character Design</option>
+            <option value="Environment Art">Environment Art</option>
+            <option value="Logos & Branding">Logos & Branding</option>
+            <option value="Concept Art">Concept Art</option>
+            <option value="Fan Art">Fan Art</option>
+            <option value="Studies">Studies</option>
+          </CategoryFilter>
+        </FilterContainer>
+
         <ArtGrid
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -820,7 +889,9 @@ const ArtSimple = () => {
               No artworks yet
             </div>
           ) : (
-            artworks.map((artwork, index) => (
+            artworks
+              .filter(artwork => selectedCategory === 'all' || artwork.category === selectedCategory)
+              .map((artwork, index) => (
             <ArtItem
               key={artwork.id}
               onClick={() => openModal(artwork)}
@@ -829,7 +900,10 @@ const ArtSimple = () => {
               transition={{ duration: 0.6, delay: 0.6 + index * 0.1 }}
               whileHover={{ scale: 1.02 }}
             >
-              <ArtImage src={artwork.thumbnailUrl || artwork.imageUrl} alt={artwork.title} />
+              <ArtImage 
+                src={artwork.thumbnail || artwork.images?.[0]?.url || artwork.thumbnailUrl || artwork.imageUrl} 
+                alt={artwork.title} 
+              />
               <ArtOverlay>
                 <ArtTitle>{artwork.title}</ArtTitle>
                 <ArtDescription>{artwork.description}</ArtDescription>
@@ -865,24 +939,22 @@ const ArtSimple = () => {
       {selectedArtwork && (
         <Modal onClick={closeModal}>
           <ModalImageSection onClick={(e) => e.stopPropagation()}>
-            <div style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
-              <ModalImageContainer
-                isZoomed={imageTransform.scale > 1}
-                onClick={handleImageClick}
-                onMouseDown={handleMouseDown}
-                onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUp}
-                onMouseLeave={handleMouseUp}
-                onWheel={handleWheel}
-              >
-                <ModalImage
-                  src={selectedArtwork.imageUrl}
-                  alt={selectedArtwork.title}
-                  scale={imageTransform.scale}
-                  translateX={imageTransform.translateX}
-                  translateY={imageTransform.translateY}
-                />
-              </ModalImageContainer>
+            <div style={{ 
+              width: '100%', 
+              height: '100%', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              overflow: 'hidden',
+              maxWidth: '100%'
+            }}>
+              <PhotoSwipeGallery
+                images={
+                  selectedArtwork.images && selectedArtwork.images.length > 0
+                    ? selectedArtwork.images
+                    : [{ url: selectedArtwork.thumbnail || selectedArtwork.imageUrl, caption: '' }]
+                }
+              />
             </div>
 
             <NavigationButtons>
@@ -899,10 +971,6 @@ const ArtSimple = () => {
                 ›
               </NavButton>
             </NavigationButtons>
-
-            <ZoomHint show={imageTransform.scale === 1}>
-              Click to zoom • Scroll wheel to zoom • Drag to pan when zoomed
-            </ZoomHint>
 
             <MobileToggleButton onClick={() => setSidebarOpen(!sidebarOpen)}>
               ℹ️

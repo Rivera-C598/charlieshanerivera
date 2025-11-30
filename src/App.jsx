@@ -20,6 +20,8 @@ import Artworks from './admin/pages/Artworks';
 import ArtworkForm from './admin/pages/ArtworkForm';
 import Content from './admin/pages/Content';
 import Analytics from './admin/pages/Analytics';
+import AdminSkills from './admin/pages/Skills';
+import AdminFiles from './admin/pages/Files';
 
 const theme = {
   colors: {
@@ -170,6 +172,8 @@ function App() {
                     <Route path="/art" element={<Artworks />} />
                     <Route path="/art/new" element={<ArtworkForm />} />
                     <Route path="/art/edit/:id" element={<ArtworkForm />} />
+                    <Route path="/skills" element={<AdminSkills />} />
+                    <Route path="/files" element={<AdminFiles />} />
                     <Route path="/tags" element={<Content />} />
                     <Route path="/content" element={<Content />} /> {/* Legacy route */}
                     <Route path="/analytics" element={<Analytics />} />

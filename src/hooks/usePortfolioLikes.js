@@ -20,6 +20,7 @@ export const usePortfolioLikes = () => {
   const [userLiked, setUserLiked] = useState(false);
   const [loading, setLoading] = useState(true);
   const [userLikeId, setUserLikeId] = useState(null);
+  const [debounceTimer, setDebounceTimer] = useState(null);
 
   // Get or create a unique visitor ID
   const getVisitorId = () => {
@@ -94,61 +95,68 @@ export const usePortfolioLikes = () => {
     loadLikes();
   }, []);
 
-  // Toggle like
-  const toggleLike = async () => {
-    try {
-      const visitorId = getVisitorId();
-      const likesRef = collection(db, 'portfolioLikes');
-
-      if (userLiked && userLikeId) {
-        // Unlike - always allowed
-        await deleteDoc(doc(db, 'portfolioLikes', userLikeId));
-        setUserLiked(false);
-        setUserLikeId(null);
-        setTotalLikes(prev => prev - 1);
-      } else {
-        // Check if they already liked today (prevents spam)
-        const lastLikeDate = localStorage.getItem('last-like-date');
-        const today = new Date().toDateString();
-        
-        if (lastLikeDate === today) {
-          alert('You already liked today! Come back tomorrow to show more love ❤️');
-          return;
-        }
-
-        // Like - create new document
-        const visitorInfo = getVisitorInfo();
-        const docRef = await addDoc(likesRef, {
-          visitorId,
-          timestamp: serverTimestamp(),
-          ...visitorInfo
-        });
-        setUserLiked(true);
-        setUserLikeId(docRef.id);
-        setTotalLikes(prev => prev + 1);
-        
-        // Store today's date to prevent multiple likes per day
-        localStorage.setItem('last-like-date', today);
-      }
-    } catch (error) {
-      console.error('Error toggling like:', error);
-      alert('Failed to update like. Please try again.');
+  // Toggle like with debouncing to prevent spam
+  const toggleLike = () => {
+    // Clear any pending database write
+    if (debounceTimer) {
+      clearTimeout(debounceTimer);
     }
-  };
 
-  // Check if user already liked today
-  const likedToday = () => {
-    const lastLikeDate = localStorage.getItem('last-like-date');
-    const today = new Date().toDateString();
-    return lastLikeDate === today;
+    // Capture current state before changing
+    const currentLikeId = userLikeId;
+    const newLikedState = !userLiked;
+    
+    // Immediately update UI for instant feedback
+    setUserLiked(newLikedState);
+    setTotalLikes(prev => newLikedState ? prev + 1 : prev - 1);
+
+    // Debounce the actual database write (500ms delay)
+    const timer = setTimeout(async () => {
+      try {
+        const visitorId = getVisitorId();
+        const likesRef = collection(db, 'portfolioLikes');
+
+        if (newLikedState) {
+          // Add like to database
+          const visitorInfo = getVisitorInfo();
+          const docRef = await addDoc(likesRef, {
+            visitorId,
+            timestamp: serverTimestamp(),
+            ...visitorInfo
+          });
+          setUserLikeId(docRef.id);
+        } else {
+          // Remove like from database - need to find it if we don't have the ID
+          if (currentLikeId) {
+            await deleteDoc(doc(db, 'portfolioLikes', currentLikeId));
+            setUserLikeId(null);
+          } else {
+            // If no ID, query for it
+            const userLikeQuery = query(likesRef, where('visitorId', '==', visitorId));
+            const userLikeSnapshot = await getDocs(userLikeQuery);
+            if (!userLikeSnapshot.empty) {
+              await deleteDoc(userLikeSnapshot.docs[0].ref);
+              setUserLikeId(null);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error updating like:', error);
+        // Revert UI on error
+        setUserLiked(!newLikedState);
+        setTotalLikes(prev => newLikedState ? prev - 1 : prev + 1);
+        alert('Failed to update like. Please try again.');
+      }
+    }, 500);
+
+    setDebounceTimer(timer);
   };
 
   return {
     totalLikes,
     userLiked,
     loading,
-    toggleLike,
-    likedToday: likedToday()
+    toggleLike
   };
 };
 

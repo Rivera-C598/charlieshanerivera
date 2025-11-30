@@ -496,9 +496,6 @@ const FeaturedProjects = () => {
       galleryUrl = '/assets/art/celes-remastered-bg.png';
     }
     
-    // Debug log
-    console.log('Artwork:', artwork.title, 'isTransparent:', isTransparent, 'isAshes:', isAshes, 'isCeles:', isCeles);
-    
     return {
       title: artwork.title,
       description: artwork.description,

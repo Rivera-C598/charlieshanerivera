@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import styled from '@emotion/styled';
+import PhotoSwipeGallery from '../PhotoSwipeGallery';
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -114,7 +115,8 @@ const MobileToggleButton = styled.button`
 const Modal = ({ 
   isOpen, 
   onClose, 
-  imageUrl, 
+  imageUrl,  // Backward compatibility: single image URL
+  images,    // NEW: Array of images with captions
   imageAlt, 
   children,
   onNext,
@@ -124,6 +126,12 @@ const Modal = ({
   sidebarOpen,
   onToggleSidebar
 }) => {
+  // Normalize images: support both old (imageUrl) and new (images array) format
+  const displayImages = images && images.length > 0
+    ? images
+    : imageUrl
+      ? [{ url: imageUrl, caption: imageAlt || '' }]
+      : [];
   useEffect(() => {
     if (!isOpen) return;
 
@@ -152,9 +160,13 @@ const Modal = ({
   return (
     <ModalOverlay onClick={onClose}>
       <ModalImageSection onClick={(e) => e.stopPropagation()}>
-        <ModalImage src={imageUrl} alt={imageAlt} />
+        {displayImages.length > 0 ? (
+          <PhotoSwipeGallery images={displayImages} />
+        ) : (
+          <ModalImage src={imageUrl} alt={imageAlt} />
+        )}
         
-        {(onNext || onPrev) && (
+        {(onNext || onPrev) && displayImages.length <= 1 && (
           <NavigationButtons>
             <NavButton 
               onClick={onPrev}
